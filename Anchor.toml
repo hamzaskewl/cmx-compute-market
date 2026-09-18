@@ -1,0 +1,23 @@
+[toolchain]
+anchor_version = "0.32.1"
+solana_version = "4.2.2"
+
+[scripts]
+test = "node tests/gpu-market.mjs"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+gpu_market = "BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG"
+
+[programs.devnet]
+gpu_market = "BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = ".keys/testnet-deployer.json"

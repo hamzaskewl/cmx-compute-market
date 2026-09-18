@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "../vendor/shadcn-tailwind-4.13.0.css";
+
+:root {
+  --background: #192226;
+  --foreground: #f4f4f5;
+  --card: #1d282c;
+  --card-foreground: #f4f4f5;
+  --popover: #1d282c;
+  --popover-foreground: #f4f4f5;
+  --primary: #959cf7;
+  --primary-foreground: #10131c;
+  --secondary: #252f34;
+  --secondary-foreground: #f4f4f5;
+  --muted: #252f34;
+  --muted-foreground: #aeb8c9;
+  --accent: #959cf7;
+  --accent-foreground: #10131c;
+  --destructive: #ff7e87;
+  --border: #506068;
+  --input: #506068;
+  --ring: #a9afff;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--type-sans);
+  --font-mono: var(--type-data);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--background); scroll-behavior: smooth; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--type-sans), sans-serif; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+a { color: inherit; }
+::selection { background: #959cf7; color: #10131c; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #192226; }
+::-webkit-scrollbar-thumb { background: #53616a; border: 2px solid #192226; }
+:focus-visible { outline: 2px solid #a9afff; outline-offset: 4px; }

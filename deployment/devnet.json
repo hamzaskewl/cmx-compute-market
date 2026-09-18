@@ -1,0 +1,72 @@
+{
+  "cluster": "devnet",
+  "rpcUrl": "https://api.devnet.solana.com",
+  "programId": "BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG",
+  "config": "5aTEHxDfiuf4fTPzcC4m3AdtLaEZRdgRWo5zRnD3hAaz",
+  "quoteMint": "CSaRLZbWTqr7vzwx5FToUhcEeL1CrQa1oy5fzavagYvX",
+  "oracleUpdatedAt": "2026-09-15T20:00:00.000Z",
+  "indices": [
+    {
+      "symbol": "A100",
+      "name": "A100 SXM4",
+      "price": 1.0225,
+      "feed": "2oQEoaify48hYtbq46uFxdoaWfUn12Sv578oJc5oDbKJ",
+      "mint": "86zggYxSYmcetszKMqr4cjtgfcPjsqPmGGVcRGpQppUA",
+      "quoteVault": "3a2BTJ64uFXx71ax1KGD5XX5xAGheD7WTfKozvWP4DMK"
+    },
+    {
+      "symbol": "B200",
+      "name": "B200",
+      "price": 7.214166666666666,
+      "feed": "4YsknDV9DkZ384PPcDMeP8rRnx23XRwmwT3QCBgbfnDC",
+      "mint": "3qfxX58amBwm5Y2YMaVV9iY85ezxDbQxGXHztMVnXFEe",
+      "quoteVault": "J4a9nvfCwCHEFzVBDdVFto5JjCgHhtHize6AP8djeyoJ"
+    },
+    {
+      "symbol": "H100",
+      "name": "H100 SXM",
+      "price": 2.527083333333333,
+      "feed": "7tM4fU7FwKTAvPzhzqcyETYkZitUPKqywXro219WQxzF",
+      "mint": "F4ncfnfYp1Ke3mRtwy8ZApz8dBNrh1UMZUQmsgvmrf5a",
+      "quoteVault": "zpSu4nW4Er2rYQ6jAaYgSsfgtxhJ1LYWjAyPuARTXPq"
+    },
+    {
+      "symbol": "H200",
+      "name": "H200",
+      "price": 4.6775,
+      "feed": "HHn1aBJUApLJKQMiQxp76456df76LdYWcwj9mkwSmHiY",
+      "mint": "3XKJhiKgkGU5mRGiWPTWR1GqMNyjxSBSrZvcbBL8Bwis",
+      "quoteVault": "BETdcDxDoz3RqFz6J6LqjjXC1ToTymovfhd1xczTdLnX"
+    },
+    {
+      "symbol": "5090",
+      "name": "RTX 5090",
+      "price": 0.7058333333333333,
+      "feed": "3ozV5Hq3Y3DnRdHdCJUtsK5QeXJJPPF7CYpZ64NS6Jio",
+      "mint": "ACMh6QGDThbcAh8kc4UDiTXFt9aJWDVepMatFxXSVagX",
+      "quoteVault": "GGPjSsQy5ZCNYyyeibVC3rn4azGbNbM4y91NSTYyfGLr"
+    }
+  ],
+  "dbc": {
+    "programId": "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN",
+    "config": "3zuTPcfBc6mLZRBeP9hdQYt5bPzb8kLvGiyxDRpBRZuv",
+    "quoteSymbol": "B200",
+    "quoteMint": "3qfxX58amBwm5Y2YMaVV9iY85ezxDbQxGXHztMVnXFEe",
+    "tradingFeeBps": 200,
+    "migrationFeeOption": 2,
+    "migrationQuoteThreshold": "240253073",
+    "creatorTradingFeePercentage": 50,
+    "initialMarketCapInQuote": 100,
+    "migrationMarketCapInQuote": 1000,
+    "migration": "DAMM v2",
+    "migratedLiquidity": "50% creator locked / 50% CMX locked",
+    "signature": "2Rria6L9QLqfvG41fNgfqjqcUoMJYPECMcmdcQGXGupn5mKcmGbqt3BeHPFasM4j7JDQjzvTnKN6aL25pMMCLco3",
+    "probePool": "EmRzxH22dNtSJD3sDGER9Ayom9F6EXCgWEucQzg5d4WY",
+    "probeBaseMint": "mARLVxKPNdTD7Hc4h5UTbjtE1euSqAKtiUKeBo1B9L2",
+    "probeSignatures": {
+      "launch": "HsUCRFBqRHQ6TECQkXSBEZsoAoytPpek1NoVeDEwfAxzZJ1ZyDuxzLwhkeN4Jx5NXoi4xUe3mqMJw4PFbVg1eiY",
+      "metadata": "3dwnuhU53ZZCJHCnwLHKfZx5NCnbdsu5y1yCLodiVnMsZpHGwGwiDhBRR5Rjeb5rbemZrhQA4woontjdsX81NGN8",
+      "sell": "4RweiPrRP5hmxERNkzx5hbfCFA5k1dSB8jRdeGwNdK1NtaAqTUetyW2qCu3e9icEb2tjZzdgXFmc1Jn2ZhxcE6fb"
+    }
+  }
+}

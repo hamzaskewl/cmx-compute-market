@@ -1,0 +1,10 @@
+{
+  "regions": [
+    { "id": "masthead", "kind": "chrome", "grid": "A0:J0", "container": true, "note": "brand, navigation, and source action as one masthead strip" },
+    { "id": "hero-proposition", "kind": "chrome", "grid": "A1:D6", "container": true, "note": "headline, short source statement, actions, and feed metadata" },
+    { "id": "hero-headline", "kind": "text", "grid": "A1:D3", "note": "large two-line Real GPU pricing headline" },
+    { "id": "ledger", "kind": "chrome", "grid": "E1:J6", "container": true, "note": "complete live GPU index ledger; copy may change with verified feed and product data" },
+    { "id": "mechanism", "kind": "chrome", "grid": "A7:J8", "container": true, "note": "numbered three-step protocol mechanism strip" },
+    { "id": "footer", "kind": "chrome", "grid": "A9:J9", "note": "quiet footer divided by one hairline" }
+  ]
+}
