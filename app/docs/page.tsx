@@ -27,7 +27,7 @@ export default async function DocsPage() {
   const openingMarketCapUsd = marketCapUsd(deployment.dbc.initialMarketCapInQuote);
   const graduationMarketCapUsd = marketCapUsd(deployment.dbc.migrationMarketCapInQuote);
   const isDevnet = network === "devnet";
-  const quoteLabel = isDevnet ? "test USDC" : "the configured quote token";
+  const quoteLabel = isDevnet ? "test USDC" : "USDC";
   const sections = [
     { id: "asset", label: "The B200 asset" },
     { id: "launch", label: "Meteora DBC" },
