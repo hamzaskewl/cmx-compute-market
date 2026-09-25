@@ -17,6 +17,11 @@
     "setup:dbc": "node scripts/setup-dbc.mjs",
     "setup:testnet": "node scripts/setup-testnet.mjs",
     "setup:devnet": "node scripts/setup-testnet.mjs",
+    "preflight:mainnet": "node scripts/mainnet-preflight.mjs",
+    "setup:mainnet": "node scripts/setup-mainnet.mjs",
+    "claim:partner-fees": "node scripts/claim-partner-fees.mjs",
+    "sync:mainnet-idl": "node scripts/sync-mainnet-idl.mjs",
+    "prepare:mainnet-build": "node scripts/prepare-mainnet-build.mjs",
     "keeper:devnet": "node scripts/keeper.mjs"
   },
   "dependencies": {

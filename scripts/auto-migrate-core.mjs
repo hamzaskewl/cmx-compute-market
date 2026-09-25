@@ -1,6 +1,7 @@
 import { Keypair } from "@solana/web3.js";
 
 export const DBC_PROGRAM_ID = "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN";
+export const MAINNET_GENESIS_HASH = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 
 function integerInRange(value, fallback, minimum, maximum, label) {
   const parsed = value === undefined || value === "" ? fallback : Number(value);
@@ -25,11 +26,21 @@ export function readMigratorSettings(env, deployment) {
   if (enabled && cluster === "mainnet-beta" && env.MIGRATOR_ENABLE_MAINNET !== "true") {
     throw new Error("Mainnet migration requires MIGRATOR_ENABLE_MAINNET=true.");
   }
+  if (enabled && cluster === "mainnet-beta" && !deployment.feeRecipient) {
+    throw new Error("Mainnet migration requires a fee recipient in the manifest.");
+  }
   if (enabled && !env.MIGRATOR_EXPECTED_GENESIS_HASH) {
     throw new Error("MIGRATOR_EXPECTED_GENESIS_HASH is required when signing is enabled.");
   }
   if (enabled && !env.MIGRATOR_KEYPAIR_JSON) {
     throw new Error("MIGRATOR_KEYPAIR_JSON is required when signing is enabled.");
+  }
+  if (enabled && cluster === "mainnet-beta" && env.MIGRATOR_EXPECTED_GENESIS_HASH !== MAINNET_GENESIS_HASH) {
+    throw new Error("MIGRATOR_EXPECTED_GENESIS_HASH must be Solana mainnet.");
+  }
+  const mainnetRpc = env.SOLANA_MAINNET_RPC_URL ?? env.SOLANA_RPC_URL;
+  if (enabled && cluster === "mainnet-beta" && (!mainnetRpc || mainnetRpc.includes("api.mainnet-beta.solana.com"))) {
+    throw new Error("Mainnet migration requires a private mainnet RPC endpoint.");
   }
   const scanMs = integerInRange(env.MIGRATOR_SCAN_MS, 2_000, 1_000, 60_000, "MIGRATOR_SCAN_MS");
   const priorityFee = integerInRange(
@@ -48,10 +59,10 @@ export function readMigratorSettings(env, deployment) {
     expectedGenesisHash: env.MIGRATOR_EXPECTED_GENESIS_HASH ?? null,
     rpcUrl: cluster === "devnet"
       ? env.SOLANA_DEVNET_RPC_URL ?? env.SOLANA_RPC_URL ?? deployment.rpcUrl
-      : env.SOLANA_RPC_URL ?? deployment.rpcUrl,
+      : env.SOLANA_MAINNET_RPC_URL ?? env.SOLANA_RPC_URL ?? deployment.rpcUrl,
     wsUrl: cluster === "devnet"
       ? env.SOLANA_DEVNET_WSS_URL ?? env.SOLANA_WSS_URL
-      : env.SOLANA_WSS_URL,
+      : env.SOLANA_MAINNET_WSS_URL ?? env.SOLANA_WSS_URL,
     configs: [...new Set(configs)],
     quoteMint: deployment.dbc.quoteMint,
   };

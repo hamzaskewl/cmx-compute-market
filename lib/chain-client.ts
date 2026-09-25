@@ -31,7 +31,8 @@ import {
   Transaction,
   VersionedTransaction,
 } from "@solana/web3.js";
-import idl from "./gpu_market.json";
+import devnetIdl from "./gpu_market.json";
+import mainnetIdl from "./gpu_market.mainnet.json";
 import { activeWallet, connectSolanaWallet, type WalletKind } from "./solana-wallet";
 import type { DbcMarket } from "./market-types";
 
@@ -52,6 +53,7 @@ export type Deployment = {
   programId: string;
   config: string;
   quoteMint: string;
+  feeRecipient?: string;
   oracleUpdatedAt: string;
   indices: DeploymentIndex[];
   dbc: {
@@ -135,7 +137,7 @@ function client(deployment: Deployment) {
   });
   return {
     connection,
-    program: new anchor.Program({ ...idl, address: deployment.programId } as anchor.Idl, provider),
+    program: new anchor.Program({ ...(deployment.cluster === "mainnet-beta" ? mainnetIdl : devnetIdl), address: deployment.programId } as anchor.Idl, provider),
     user: injected.publicKey,
   };
 }
@@ -360,6 +362,12 @@ export async function tradeIndex(
     quoteVault: new PublicKey(index.quoteVault),
     user,
     tokenProgram: TOKEN_PROGRAM_ID,
+    ...(deployment.cluster === "mainnet-beta" ? {
+      feeAccount: getAssociatedTokenAddressSync(
+        quoteMint,
+        new PublicKey(deployment.feeRecipient ?? ""),
+      ),
+    } : {}),
   };
 
   if (mode === "buy") {
@@ -392,6 +400,9 @@ export async function createLaunch(
   ticker: string,
   feePercent: number,
 ) {
+  if (deployment.cluster === "mainnet-beta") {
+    throw new Error("Mainnet launches use Meteora DBC.");
+  }
   const cleanName = name.trim().replace(/[^\x20-\x7E]/g, "").slice(0, 32);
   const cleanTicker = ticker
     .trim()

@@ -20,21 +20,47 @@ import { loadDeployer } from "./keypair.mjs";
 
 const ROOT = process.cwd();
 const CLUSTER = process.env.SOLANA_CLUSTER ?? "devnet";
-const DEPLOYMENT_PATH = path.join(ROOT, "deployment", `${CLUSTER}.json`);
-const KEYPAIR_PATH = process.env.DEPLOYER_KEYPAIR ?? path.join(ROOT, ".keys", "dbc-config-payer.json");
+const OUTPUT_PATH = path.join(ROOT, "deployment", `${CLUSTER}.json`);
+const PENDING_PATH = path.join(ROOT, ".keys", "mainnet-pending.json");
+const KEYPAIR_PATH = process.env.DEPLOYER_KEYPAIR ?? path.join(ROOT, ".keys", CLUSTER === "mainnet-beta" ? "mainnet-deployer.json" : "dbc-config-payer.json");
 
-if (CLUSTER !== "devnet") {
-  throw new Error("CMX DBC setup is intentionally restricted to devnet for now.");
+if (CLUSTER !== "devnet" && CLUSTER !== "mainnet-beta") {
+  throw new Error("SOLANA_CLUSTER must be devnet or mainnet-beta.");
+}
+if (CLUSTER === "mainnet-beta" && !process.argv.includes("--mainnet")) {
+  throw new Error("Mainnet DBC setup requires --mainnet.");
 }
 
-const deployment = JSON.parse(await readFile(DEPLOYMENT_PATH, "utf8"));
-const connection = new Connection(process.env.SOLANA_RPC_URL ?? deployment.rpcUrl, "confirmed");
+const source = CLUSTER === "mainnet-beta"
+  ? await readFile(OUTPUT_PATH, "utf8").catch((error) => {
+    if (error.code !== "ENOENT") throw error;
+    return readFile(PENDING_PATH, "utf8");
+  })
+  : await readFile(OUTPUT_PATH, "utf8");
+const deployment = JSON.parse(source);
+if (CLUSTER === "mainnet-beta") {
+  const publishedAt = Date.parse(deployment.oracleUpdatedAt);
+  if (!Number.isFinite(publishedAt) || publishedAt > Date.now() + 5 * 60_000
+      || Date.now() - publishedAt > 36 * 60 * 60_000) {
+    throw new Error("Refresh the Ornn reference and mainnet feeds before creating a DBC config.");
+  }
+}
+const rpcUrl = CLUSTER === "mainnet-beta"
+  ? process.env.SOLANA_MAINNET_RPC_URL ?? process.env.SOLANA_RPC_URL
+  : process.env.SOLANA_RPC_URL ?? deployment.rpcUrl;
+if (CLUSTER === "mainnet-beta" && (!rpcUrl || rpcUrl.includes("api.mainnet-beta.solana.com"))) {
+  throw new Error("Set SOLANA_MAINNET_RPC_URL to a private mainnet RPC endpoint.");
+}
+const connection = new Connection(rpcUrl, "confirmed");
+if (CLUSTER === "mainnet-beta" && await connection.getGenesisHash() !== "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d") {
+  throw new Error("RPC genesis hash is not Solana mainnet.");
+}
 const b200 = deployment.indices.find((index) => index.symbol === "B200");
 // The immutable DBC config quotes market caps in cmB200. Calibrate to the
 // requested Pump-like USD targets using the observed Ornn B200 reference.
 // Recheck this reference before creating a new config; later USD values drift
 // with the B200 index even when the onchain cmB200 thresholds stay fixed.
-const B200_USD_AT_CALIBRATION = Number(process.env.B200_USD_REFERENCE ?? "8.06");
+const B200_USD_AT_CALIBRATION = Number(process.env.B200_USD_REFERENCE ?? (CLUSTER === "mainnet-beta" ? b200?.price : "8.06"));
 const INITIAL_TARGET_USD = 3_600;
 const MIGRATION_TARGET_USD = 49_700;
 const TOKEN_SUPPLY = 1_000_000_000;
@@ -50,6 +76,13 @@ if (!b200) throw new Error("The B200 index must be deployed before creating the 
 if (deployment.dbc?.config && !process.argv.includes("--new-curve") && !process.argv.includes("--preview")) {
   const existing = new PublicKey(deployment.dbc.config);
   if (await connection.getAccountInfo(existing)) {
+    if (CLUSTER === "mainnet-beta") {
+      const state = await new DynamicBondingCurveClient(connection, "confirmed").state.getPoolConfig(existing);
+      if (!state?.feeClaimer.equals(new PublicKey(deployment.feeRecipient))
+          || !state.quoteMint.equals(new PublicKey(b200.mint))) {
+        throw new Error("Existing mainnet DBC config has the wrong fee claimer or quote mint.");
+      }
+    }
     console.log(`Using existing Meteora DBC config ${existing.toBase58()}. Pass --new-curve to create a new immutable config.`);
     process.exit(0);
   }
@@ -123,6 +156,9 @@ if (process.argv.includes("--preview")) {
 }
 
 const payer = await loadDeployer(KEYPAIR_PATH);
+if (CLUSTER === "mainnet-beta" && deployment.feeRecipient !== payer.publicKey.toBase58()) {
+  throw new Error("Mainnet DBC fee claimer must be the configured CMX fee recipient.");
+}
 const config = Keypair.generate();
 const client = new DynamicBondingCurveClient(connection, "confirmed");
 const transaction = await client.partner.createConfig({
@@ -163,5 +199,5 @@ deployment.dbc = {
   signature,
 };
 
-await writeFile(DEPLOYMENT_PATH, `${JSON.stringify(deployment, null, 2)}\n`);
+await writeFile(OUTPUT_PATH, `${JSON.stringify(deployment, null, 2)}\n`);
 console.log(JSON.stringify({ config: deployment.dbc.config, signature }, null, 2));

@@ -103,7 +103,7 @@ For failed RPC calls, delayed confirmations, missing markets, and migration chec
 
 ## Mainnet work
 
-The repository has a Devnet manifest only. A Mainnet launch requires a real quote asset and collateral policy, reviewed vault/oracle/fee/redemption controls, deployed program and DBC config, a Mainnet manifest, funded and protected operational signers, and full buy, sell, graduation, and post-graduation tests on that deployment. The Devnet faucet and test USDC are for demonstration, not production collateral.
+The repository still has a Devnet manifest only. The [Mainnet launch runbook](docs/mainnet-launch.md) now prepares a distinct program ID, Circle native Solana USDC collateral, CMX fee routing, a mainnet DBC setup path, and a migration signer tied to the fee recipient. No Mainnet program or DBC config has been deployed. A public launch still needs a built and independently reviewed program, a funded and protected signer, a reserve policy, the Mainnet manifest, and full buy, sell, graduation, and post-graduation tests on that deployment. The Devnet faucet and test USDC remain demonstration assets.
 
 ## Repository map
 

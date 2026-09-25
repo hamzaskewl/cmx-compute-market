@@ -7,9 +7,11 @@ import {
   createMint,
   getAssociatedTokenAddressSync,
   getAccount,
+  getOrCreateAssociatedTokenAccount,
+  mintTo,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { PublicKey, SystemProgram } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
@@ -28,11 +30,19 @@ const bytes = (text, size) => {
 };
 
 const [config] = PublicKey.findProgramAddressSync([Buffer.from("config")], program.programId);
-const quoteMint = await createMint(provider.connection, payer, config, null, 6);
+const [programData] = PublicKey.findProgramAddressSync(
+  [program.programId.toBuffer()],
+  new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111"),
+);
+const quoteMint = await createMint(provider.connection, payer, user, null, 6);
+const feeRecipient = Keypair.generate().publicKey;
+const feeAccount = await getOrCreateAssociatedTokenAccount(provider.connection, payer, quoteMint, feeRecipient);
+const userQuote = (await getOrCreateAssociatedTokenAccount(provider.connection, payer, quoteMint, user)).address;
 
 await program.methods
-  .initialize()
-  .accounts({ config, quoteMint, authority: user, systemProgram: SystemProgram.programId })
+  .initialize(feeRecipient)
+  .accounts({ config, quoteMint, program: program.programId, programData,
+    authority: user, systemProgram: SystemProgram.programId })
   .rpc();
 
 const symbol = bytes("H100", 12);
@@ -54,23 +64,8 @@ await program.methods
   })
   .rpc();
 
-const userQuote = getAssociatedTokenAddressSync(quoteMint, user);
 const userIndex = getAssociatedTokenAddressSync(indexMint, user);
-const [receipt] = PublicKey.findProgramAddressSync([Buffer.from("faucet"), user.toBuffer()], program.programId);
-
-await program.methods
-  .claimTestUsdc()
-  .accounts({
-    config,
-    quoteMint,
-    userQuote,
-    receipt,
-    user,
-    tokenProgram: TOKEN_PROGRAM_ID,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-    systemProgram: SystemProgram.programId,
-  })
-  .rpc();
+await mintTo(provider.connection, payer, quoteMint, userQuote, payer, 10_000_000_000);
 
 await program.methods
   .buyIndex(new BN(100_000_000), new BN(34_000_000))
@@ -86,11 +81,14 @@ await program.methods
     tokenProgram: TOKEN_PROGRAM_ID,
     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
     systemProgram: SystemProgram.programId,
+    feeAccount: feeAccount.address,
   })
   .rpc();
 
 const bought = await getAccount(provider.connection, userIndex);
 assert(bought.amount > 34_000_000n, "oracle buy should mint H100 index coins");
+assert.equal((await getAccount(provider.connection, feeAccount.address)).amount, 300_000n,
+  "the mint fee should reach the configured recipient");
 
 await program.methods
   .sellIndex(new BN(17_000_000), new BN(48_000_000))
@@ -104,87 +102,18 @@ await program.methods
     quoteVault,
     user,
     tokenProgram: TOKEN_PROGRAM_ID,
+    feeAccount: feeAccount.address,
   })
   .rpc();
 
 const quoteAfterRoundTrip = await getAccount(provider.connection, userQuote);
 assert(quoteAfterRoundTrip.amount > 9_948_000_000n, "redemption should use accumulated bid liquidity");
+assert((await getAccount(provider.connection, feeAccount.address)).amount > 300_000n,
+  "the redemption fee should reach the configured recipient");
 
-const nonce = new BN(1);
-const nonceBytes = nonce.toArrayLike(Buffer, "le", 8);
-const [market] = PublicKey.findProgramAddressSync(
-  [Buffer.from("market"), user.toBuffer(), nonceBytes],
-  program.programId,
-);
-const [marketMint] = PublicKey.findProgramAddressSync(
-  [Buffer.from("market-mint"), market.toBuffer()],
-  program.programId,
-);
-const [tokenVault] = PublicKey.findProgramAddressSync(
-  [Buffer.from("market-token-vault"), market.toBuffer()],
-  program.programId,
-);
-const [pairVault] = PublicKey.findProgramAddressSync(
-  [Buffer.from("market-pair-vault"), market.toBuffer()],
-  program.programId,
-);
-
-await program.methods
-  .createMarket(nonce, [...bytes("Tensor Club", 32)], 11, [...bytes("TNSR", 8)], 4, 100)
-  .accounts({
-    config,
-    feed,
-    pairMint: indexMint,
-    market,
-    marketMint,
-    tokenVault,
-    pairVault,
-    creator: user,
-    tokenProgram: TOKEN_PROGRAM_ID,
-    systemProgram: SystemProgram.programId,
-  })
-  .rpc();
-
-const userMarket = getAssociatedTokenAddressSync(marketMint, user);
-await program.methods
-  .buyMarket(new BN(1_000_000), new BN(1))
-  .accounts({
-    market,
-    pairFeed: feed,
-    pairMint: indexMint,
-    marketMint,
-    tokenVault,
-    pairVault,
-    userPair: userIndex,
-    userMarket,
-    user,
-    tokenProgram: TOKEN_PROGRAM_ID,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-    systemProgram: SystemProgram.programId,
-  })
-  .rpc();
-
-const launched = await getAccount(provider.connection, userMarket);
-assert(launched.amount > 0n, "bonding curve should deliver launched tokens");
-
-await program.methods
-  .sellMarket(new BN((launched.amount / 2n).toString()), new BN(1))
-  .accounts({
-    market,
-    pairFeed: feed,
-    pairMint: indexMint,
-    marketMint,
-    tokenVault,
-    pairVault,
-    userPair: userIndex,
-    userMarket,
-    user,
-    tokenProgram: TOKEN_PROGRAM_ID,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-    systemProgram: SystemProgram.programId,
-  })
-  .rpc();
-
-const marketState = await program.account.market.fetch(market);
-assert(marketState.holderFees.gt(new BN(0)), "40/30/30 fee ledgers should accrue");
-console.log("Local smoke test passed: faucet, index buy/sell, market launch, and curve buy/sell.");
+const nextAuthority = Keypair.generate().publicKey;
+await program.methods.setAuthorities(nextAuthority, user, feeRecipient)
+  .accounts({ config, authority: user }).rpc();
+const rotatedConfig = await program.account.config.fetch(config);
+assert(rotatedConfig.authority.equals(nextAuthority), "authority rotation should update the config");
+console.log("Local smoke test passed: external collateral, fee routing, index buy/sell, and authority rotation.");

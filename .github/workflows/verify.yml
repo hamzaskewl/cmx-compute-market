@@ -21,3 +21,33 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: node --test tests/auto-migrate.test.mjs
+
+  program:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install pinned Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v4.2.2/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Install Anchor 0.32.1
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor --tag v0.32.1 avm --locked
+          avm install 0.32.1
+          avm use 0.32.1
+      - name: Compile mainnet program and IDL
+        run: anchor build
+      - name: Verify generated artifact
+        run: npm run sync:mainnet-idl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mainnet-program-build
+          path: |
+            target/deploy/gpu_market.so
+            target/idl/gpu_market.json
