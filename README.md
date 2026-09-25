@@ -46,6 +46,8 @@ flowchart LR
 
 The browser sends Solana JSON-RPC calls through `/api/rpc`, so the provider key stays in server variables. Transaction confirmation polls HTTP signature status; the proxy does not provide a browser WebSocket. Market data uses a separate server-side WebSocket subscription and streams updates to browsers over SSE. Historical swaps are reconstructed from pool-vault token balance changes, deduplicated by signature, and cached to limit repeat RPC reads.
 
+For the price, asset, and trust boundaries, see the [technical architecture](docs/architecture.md).
+
 ## Market lifecycle
 
 ```mermaid
@@ -96,6 +98,8 @@ node --test tests/auto-migrate.test.mjs
 Additional live smoke commands are `npm run test:devnet`, `npm run test:dbc`, and `npm run test:live`. They contact Devnet and may require a local server, funded wallet, or deployed accounts; read the scripts before running them. The Anchor program test in [`tests/gpu-market.mjs`](tests/gpu-market.mjs) requires a local validator and built program binary.
 
 The web service uses the root [`Dockerfile`](Dockerfile) and [`railway.json`](railway.json). The migration worker is a **separate** Railway service staged by [`scripts/stage-migrator.mjs`](scripts/stage-migrator.mjs) with [`Dockerfile.migrator`](Dockerfile.migrator); it should have no public domain and one replica per cluster. The worker checks the RPC genesis hash before signing. See [worker setup and operations](docs/auto-migration.md).
+
+For failed RPC calls, delayed confirmations, missing markets, and migration checks, use the [Devnet troubleshooting guide](docs/troubleshooting.md).
 
 ## Mainnet work
 
