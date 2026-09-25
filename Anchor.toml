@@ -25,5 +25,6 @@ url = "https://api.apr.dev"
 cluster = "Localnet"
 wallet = ".keys/testnet-deployer.json"
 
-[test.validator]
+[test]
 upgradeable = true
+startup_wait = 10000
