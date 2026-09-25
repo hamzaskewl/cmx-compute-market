@@ -51,6 +51,8 @@ console.log(JSON.stringify({
   currentBalanceSol: sol(balance),
   permanentProgramRentSol: sol(programRent + dataRent),
   temporaryUploadBufferSol: sol(bufferRent),
-  estimatedPeakSol: sol(programRent + dataRent + bufferRent),
-  additionalToSixSol: sol(Math.max(0, 6_000_000_000 - balance)),
+  // The loader returns the upload buffer's lamports to the payer before
+  // funding ProgramData. These deposits are not additive.
+  estimatedPeakProgramStorageSol: sol(Math.max(programRent + dataRent, programRent + bufferRent)),
+  additionalForProgramStorageSol: sol(Math.max(0, programRent + dataRent - balance)),
 }, null, 2));

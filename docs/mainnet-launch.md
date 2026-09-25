@@ -50,13 +50,16 @@ and `.so` must be verified against the source and the generated mainnet program
 ID. Run the local validator test (`anchor test`) and a full independent review
 of oracle, reserve, redemption, fee, and upgrade controls before deploying.
 
-The compiled Mainnet program is 410,520 bytes. Solana Mainnet currently
-requires 2.087154 SOL held in the program accounts and another 2.086280 SOL
-temporarily for the upload buffer. The deployment peak is about 4.173433 SOL,
-plus about 0.028 SOL of initial config, feed, mint, vault, and DBC account rent,
-and transaction fees. Fund the deployer to at least 6 SOL total, with a larger
-operating buffer for future migrations. Re-run the preflight before deployment
-because network rent and wallet balance can change.
+The compiled Mainnet program is 410,520 bytes. At the last preflight quote,
+Solana Mainnet required 2.087154 SOL held in the program accounts. The
+2.086280 SOL upload buffer is temporary: the loader returns its lamports to
+the payer before funding the program data account, so these deposits are not
+additive. Allow about 0.028 SOL more for initial config, feed, mint, vault, and
+DBC account rent, plus transaction fees and an operating balance for future
+migrations. The earlier 6 SOL funding recommendation double-counted the
+buffer and was incorrect. Re-run the preflight before any deployment because
+network rent and wallet balance can change. No Mainnet deployment is authorized
+by this runbook.
 
 ## Deploy and initialize
 
