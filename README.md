@@ -1,181 +1,115 @@
-# CMX — Compute Market Exchange
+# Compute Exchange (CMX)
 
-CMX is a Solana MVP for launching and trading tokens paired with real GPU-hour
-indexes. A composite pricing feed aggregates market inputs for H100, H200, B200,
-A100, and RTX 5090 reference prices.
+Compute Exchange is a Solana Devnet application for creating and trading token markets quoted in **cmB200**, a token whose mint and redemption price follows a B200 GPU-hour reference. Token launches use [Meteora Dynamic Bonding Curve](https://github.com/MeteoraAg/dynamic-bonding-curve); graduated markets move to DAMM v2.
 
-## What is implemented
+**[Open the Devnet app](https://cmx-compute-market-production.up.railway.app/)** · [Explore markets](https://cmx-compute-market-production.up.railway.app/markets) · [Launch a token](https://cmx-compute-market-production.up.railway.app/launch)
 
-- Live composite index feed with a five-minute cache.
-- Oracle-priced cmB200 mint/redeem at a 0.30% fee.
-- One 10,000 test-USDC faucet claim per wallet.
-- Permissionless fixed-supply SPL launches on Meteora DBC, quoted in cmB200.
-- A fixed 2.00% DBC trading fee, 100 cmB200 opening market cap, and 1,000
-  cmB200 migration market cap.
-- Final buys through Meteora `swap2` with `PartialFill`, so only the amount the
-  curve can accept is spent and unused cmB200 stays in the wallet.
-- Exact reserve-threshold graduation and a permissionless DAMM v2 migration
-  fallback, with both creator and CMX liquidity permanently locked 50/50.
-- Onchain swap history, live candle/line charts, transaction tape, and USD
-  equivalents beneath user-facing numeric cmB200 values.
-- Phantom wallet UI for devnet claims, cmB200 trades, launches, swaps, and
-  migration.
-- Railway-ready Next.js application and Docker image.
+> **Status:** This is a Devnet prototype. Tokens, SOL, and test USDC shown in the app are Devnet assets. The network switch exposes a Mainnet view, but Mainnet trading remains unavailable until a separate manifest, program deployment, real quote asset, and production controls exist. See [Mainnet work](#mainnet-work).
 
-The oracle vault is intentionally one-sided: buys deposit test-USDC and mint the
-GPU index, while sells burn the index and can redeem only against quote liquidity
-already accumulated in that index vault. This reproduces the inexpensive MVP
-mechanism without pretending the oracle alone creates a peg.
+## What the prototype does
 
-## Local development
+- Tracks reference GPU-hour prices for B200, H200, H100, A100, and RTX 5090. The B200 feed is written onchain by a keeper and drives cmB200 mint and redemption quotes.
+- Mints cmB200 against Devnet test USDC and burns cmB200 to redeem from the corresponding quote vault. The program charges a 0.30% fee. Redemption depends on the vault's actual reserves; an oracle price alone does not guarantee liquidity or a peg.
+- Creates fixed-supply SPL tokens paired with cmB200 on Meteora DBC. The active Devnet configuration targets a **447 cmB200 opening market cap** and **6,166 cmB200 at graduation**, with a **1.25% DBC trading fee**. Those are quote-token targets; their USD equivalents move with the B200 reference price. Existing pools retain the configuration with which they were created.
+- Lets visitors discover markets, search by name, ticker, mint, or pool address, sort by market cap, launch time, or recent volume, and trade before and after graduation.
+- Builds first-party price candles, volume bars, and a trade tape from confirmed onchain swaps. Market pages preserve the same URL when liquidity moves from DBC to DAMM v2.
+- Runs a separate Devnet migration worker that watches curve accounts and submits permissionless DAMM v2 migrations with a funded fee-payer wallet. A user can still migrate manually if the worker is unavailable.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Wallet[Phantom or MetaMask] --> Client[Next.js client]
+    Client --> Routes[Next.js API routes]
+    Routes --> RPC[Solana RPC and WebSocket provider]
+    Client --> Proxy[Same-origin /api/rpc]
+    Proxy --> RPC
+    Feeds[GPU price sources] --> Keeper[Oracle keeper]
+    Keeper --> Program[CMX Solana program]
+    RPC <--> Program
+    Program --> Vault[Test USDC vault and cmB200 mint]
+    Client --> DBC[Meteora DBC pools]
+    Worker[Migration worker] --> DBC
+    DBC --> DAMM[Meteora DAMM v2 pools]
+    Routes --> Stream[Shared market stream]
+    Stream --> Client
+```
+
+| Layer | Responsibility | Main files |
+| --- | --- | --- |
+| Onchain program | Index feeds, quote vaults, test faucet, cmB200 mint and redemption, fees | [`programs/gpu_market/src/lib.rs`](programs/gpu_market/src/lib.rs) |
+| Wallet client | Transaction construction, local balance checks, DBC and DAMM v2 trading | [`lib/chain-client.ts`](lib/chain-client.ts), [`lib/solana-wallet.ts`](lib/solana-wallet.ts) |
+| Market indexer | Pool discovery, current state, transaction-derived swaps, caches | [`lib/dbc-markets.ts`](lib/dbc-markets.ts) |
+| Live transport | WebSocket updates, confirmed-chain reconciliation, Server-Sent Events | [`lib/market-live.ts`](lib/market-live.ts), [`app/api/markets/[address]/stream/route.ts`](app/api/markets/%5Baddress%5D/stream/route.ts) |
+| Migration worker | Eligibility scans, account subscriptions, guarded transaction submission | [`scripts/auto-migrate.mjs`](scripts/auto-migrate.mjs), [`scripts/auto-migrate-core.mjs`](scripts/auto-migrate-core.mjs) |
+| Deployment manifest | Network addresses, curve targets, prior DBC configs | [`deployment/devnet.json`](deployment/devnet.json) |
+
+The browser sends Solana JSON-RPC calls through `/api/rpc`, so the provider key stays in server variables. Transaction confirmation polls HTTP signature status; the proxy does not provide a browser WebSocket. Market data uses a separate server-side WebSocket subscription and streams updates to browsers over SSE. Historical swaps are reconstructed from pool-vault token balance changes, deduplicated by signature, and cached to limit repeat RPC reads.
+
+## Market lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> BondingCurve: create token and DBC pool
+    BondingCurve --> BondingCurve: buy or sell against cmB200
+    BondingCurve --> ReadyToMigrate: onchain quote reserve reaches threshold
+    ReadyToMigrate --> DAMMv2: worker or user submits migration transaction
+    DAMMv2 --> DAMMv2: buy or sell through graduated pool
+```
+
+The threshold makes migration **eligible**; it does not move funds by itself. The migration is a separate Solana transaction that creates the DAMM v2 pool. The worker's WebSocket path aims to submit quickly, while a slower scan recovers missed updates and restarts. Network confirmation and pool availability have no fixed three-second guarantee. Read [automatic migration operations](docs/auto-migration.md) for signer, genesis-hash, and deployment details.
+
+At the curve boundary, buys use Meteora `swapQuote2` / `swap2` with `PartialFill`. Only the amount the curve can accept is spent. The market page combines pre- and post-migration trades in one chart; it labels volume as **recent volume** because it is derived from a bounded trade history rather than an all-time index.
+
+## Run locally
+
+Requirements: Node.js 20.19 or newer, npm, and a Solana Devnet wallet for signed flows.
 
 ```bash
-npm install
+git clone https://github.com/hamzaskewl/cmx-compute-market.git
+cd cmx-compute-market
+npm ci
+cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://127.0.0.1:3000`.
+Open `http://localhost:3000`. The checked-in Devnet manifest lets the interface read existing deployments. For reliable market indexing and wallet transactions, set `SOLANA_DEVNET_RPC_URL` and `SOLANA_DEVNET_WSS_URL` in `.env.local` to matching Devnet endpoints. Use `SOLANA_CLUSTER=devnet`. The public Devnet RPC is a fallback for local development and can throttle pool scans.
 
-## Live B200 market data
+| Variable | Purpose |
+| --- | --- |
+| `SOLANA_DEVNET_RPC_URL` | Server-side Devnet HTTP RPC; also backs browser calls through `/api/rpc` |
+| `SOLANA_DEVNET_WSS_URL` | Server-side Devnet market subscriptions |
+| `SOLANA_MAINNET_RPC_URL`, `SOLANA_MAINNET_WSS_URL` | Reserved for a separate Mainnet deployment manifest |
+| `SOLANA_CLUSTER` | Default selected cluster; Devnet unless configured otherwise |
+| `MIGRATOR_KEYPAIR_JSON` | Worker fee-payer secret, only in the separate worker service |
 
-Each Meteora DBC market page opens one server-side Solana WebSocket subscription
-for that pool and shares it across connected browser sessions. A three-second
-confirmed-chain reconciliation poll runs independently, so updates continue if
-the WebSocket is throttled or disconnected. Swaps are reconstructed from
-pool-vault balance deltas, deduplicated by transaction signature, streamed to
-the browser over Server-Sent Events, and deterministically aggregated into
-1-second, 3-second, 5-second, or 1-minute OHLC candles. In sparse markets, the
-next active candle carries the previous executed close as its open; empty time
-buckets never receive synthetic trades or volume.
+Keep provider keys, wallet secret keys, and signer JSON out of Git and out of `NEXT_PUBLIC_*` variables. The Devnet manifest contains public addresses, not private keys.
 
-The production interface keeps this transport detail quiet: it shows concise
-market and transaction states instead of repeating live, verified, confirmed,
-or devnet badges throughout the terminal. Chain commitment and provider details
-remain here in the technical documentation.
-
-The `Official` chart source is available on every cluster, including devnet and
-pre-graduation DBC curves. Mainnet markets also expose GMGN's documented embed
-at `https://www.gmgn.cc/kline/sol/{mint}` as an independent indexed view. GMGN
-is intentionally disabled on devnet because it does not index test tokens.
-
-The default devnet RPC works without additional configuration. For lower latency
-and better production reliability, configure both server-only variables with a
-Helius or another Solana WebSocket provider:
+## Build and checks
 
 ```bash
-SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=YOUR_KEY
-SOLANA_WSS_URL=wss://devnet.helius-rpc.com/?api-key=YOUR_KEY
+npm run lint
+npm run build
+node --test tests/auto-migrate.test.mjs
 ```
 
-Do not expose the provider key through `NEXT_PUBLIC_*`. Helius standard
-WebSockets work with this implementation immediately; its richer
-`transactionSubscribe` or LaserStream gRPC products are an upgrade path when
-CMX needs to index many pools or persist a market-wide trade archive.
+Additional live smoke commands are `npm run test:devnet`, `npm run test:dbc`, and `npm run test:live`. They contact Devnet and may require a local server, funded wallet, or deployed accounts; read the scripts before running them. The Anchor program test in [`tests/gpu-market.mjs`](tests/gpu-market.mjs) requires a local validator and built program binary.
 
-## DBC boundary and DAMM v2 migration
+The web service uses the root [`Dockerfile`](Dockerfile) and [`railway.json`](railway.json). The migration worker is a **separate** Railway service staged by [`scripts/stage-migrator.mjs`](scripts/stage-migrator.mjs) with [`Dockerfile.migrator`](Dockerfile.migrator); it should have no public domain and one replica per cluster. The worker checks the RPC genesis hash before signing. See [worker setup and operations](docs/auto-migration.md).
 
-The final buy is quoted and submitted with Meteora `swapQuote2` / `swap2` in
-`PartialFill` mode. If the order crosses the end of the curve, the receipt shows
-the cmB200 actually spent and the unspent amount left in the wallet.
+## Mainnet work
 
-Migration readiness comes from the DBC account itself:
-`quoteReserve >= migrationQuoteThreshold`. The rounded progress percentage is
-display-only and never authorizes migration. When the exact threshold is met,
-the market disables curve trading and exposes a permissionless DAMM v2 migration
-action as a fallback to Meteora's migrator service.
+The repository has a Devnet manifest only. A Mainnet launch requires a real quote asset and collateral policy, reviewed vault/oracle/fee/redemption controls, deployed program and DBC config, a Mainnet manifest, funded and protected operational signers, and full buy, sell, graduation, and post-graduation tests on that deployment. The Devnet faucet and test USDC are for demonstration, not production collateral.
 
-The finish-review market completed this path on devnet and migrated to DAMM v2
-pool [`F2ZVSu4jNv3NTY6DDx4UAjA611DnbdtbGVWA76Zt27QE`](https://explorer.solana.com/address/F2ZVSu4jNv3NTY6DDx4UAjA611DnbdtbGVWA76Zt27QE?cluster=devnet).
+## Repository map
 
-Run the end-to-end stream smoke test while the local app is running:
-
-```bash
-npm run test:live
-```
-
-## Program test
-
-Build and start a validator from WSL/Linux:
-
-```bash
-anchor build
-solana-test-validator --reset \
-  --ledger /tmp/cmx-test-ledger \
-  --bpf-program BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG \
-  target/deploy/gpu_market.so
-```
-
-In another WSL/Linux shell with Node installed:
-
-```bash
-ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 \
-ANCHOR_WALLET=.keys/testnet-deployer.json \
-node tests/gpu-market.mjs
-```
-
-Or run the test client from Windows PowerShell while the WSL validator is live:
-
-```powershell
-$env:ANCHOR_PROVIDER_URL = "http://127.0.0.1:8899"
-$env:ANCHOR_WALLET = (Resolve-Path .keys/testnet-deployer.json)
-node tests/gpu-market.mjs
-```
-
-The smoke test covers initialization, faucet, index buy/sell, market launch,
-curve buy/sell, and fee-ledger accrual.
-
-## Devnet deployment
-
-The checked-in program ID is
-`BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG`. The current deployer public
-key is `DuxpFkiZjfewgx1ue6qtWwvf9ibrK3UqvThRsPXT1zjC`; fund it with at least
-2.37 devnet SOL before deploying the current 464 KB binary.
-
-```bash
-solana balance --url devnet --keypair .keys/testnet-deployer.json
-solana program deploy target/deploy/gpu_market.so \
-  --program-id target/deploy/gpu_market-keypair.json \
-  --keypair .keys/testnet-deployer.json \
-  --url devnet
-npm run setup:devnet
-npm run keeper:devnet
-```
-
-`setup:devnet` creates `deployment/devnet.json`,
-which the web app serves to the wallet client. Redeploy the web app after that
-file exists. Never commit
-`.keys/`.
-
-The checked-in manifest includes Meteora DBC config
-`3zuTPcfBc6mLZRBeP9hdQYt5bPzb8kLvGiyxDRpBRZuv` and probe market
-`EmRzxH22dNtSJD3sDGER9Ayom9F6EXCgWEucQzg5d4WY`. That probe has finalized
-launch, metadata, sell, and subsequent swap transactions on devnet, so the
-market directory and history pipeline operate on real chain activity rather
-than fixtures.
-
-`keeper:devnet` is a single refresh pass: it fetches the latest composite
-prices, submits one on-chain update per registered index, refreshes
-`deployment/devnet.json`, and exits. Schedule it once per day with Windows Task
-Scheduler, cron, or a Railway worker if you want prices to keep updating
-automatically. Each feed is valid for three days; after that, stale-price
-trades are rejected until the keeper runs again.
-
-## Cost and liquidity model
-
-- Current program binary rent on devnet: about 2.36 SOL (recoverable if the
-  program account is closed by its authority).
-- Config, feeds, mints, and vaults require a small additional amount of SOL.
-- No protocol-funded quote liquidity is required to open an index. Redemption
-  capacity grows from prior buys, so sell capacity is explicitly bounded by each
-  vault's test-USDC balance.
-- Real mainnet peg depth is therefore a product choice: seed USDC if immediate
-  redemptions are required, or retain the one-sided bootstrap behavior for the
-  lowest-cost launch.
-
-## Production
-
-The application includes `railway.json` and a multi-stage `Dockerfile`:
-
-```bash
-railway up --service cmx-compute-market
+```text
+app/                 Next.js pages and API routes
+components/          Wallet, launchpad, market, and chart UI
+lib/                 Solana client, market indexing, live stream, and pricing logic
+programs/gpu_market/ Anchor program
+deployment/          Public per-cluster deployment manifests
+scripts/             Setup, keeper, and migration worker entry points
+tests/               Program, migration, and Devnet smoke tests
+docs/                Operator documentation
 ```

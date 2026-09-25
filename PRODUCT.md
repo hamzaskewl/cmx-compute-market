@@ -40,7 +40,8 @@ web
 ## Brand Commitments
 
 - Confirmed: the product is a branded compute-commodities exchange, inspired by the information clarity and authority of Commodities Market without copying its identity.
-- Confirmed: the working name is CX, Compute Exchange, with a black, white, and gray palette. The user selected the AI-generated Hour Dial emblem (concept 3) as the brand mark.
+- Confirmed: the working name is CX, Compute Exchange, with a black, white, and gray foundation. The user selected the AI-generated Hour Dial emblem (concept 3) as the brand mark.
+- Current local color trial: the emblem's center square and selected live/action signals use NVIDIA green (#76B900); the original monochrome mark is preserved for comparison.
 - Confirmed: the emblem appears without a background tile throughout the website and as the transparent favicon; social profile and campaign graphics place the same symbol on black.
 - Confirmed: keep the existing pixel B200 illustration. Additional GPU art is not needed; visual variety should come from logos, typography, chart treatment, and simple product graphics.
 - Confirmed: show only B200 on the home page. Other GPUs may appear off-home as clearly disabled coming-soon markets.

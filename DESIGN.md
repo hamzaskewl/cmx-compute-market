@@ -1,11 +1,17 @@
 ---
 name: CX Compute Exchange
-description: A monochrome, chart-first market interface for B200 GPU-hours, with a separate Meteora DBC launchpad.
+description: A graphite, chart-first market interface for B200 GPU-hours with restrained green signals and a separate Meteora DBC launchpad.
 colors:
   canvas: "#131313"
   panel: "#232323"
   rule: "#4d4d4d"
   signal: "#f2f2f2"
+  accent: "#76b900"
+  accentHover: "#89cf0d"
+  candleUp: "#26a69a"
+  candleDown: "#ef5350"
+  candleUpVolume: "#26a69a66"
+  candleDownVolume: "#ef535066"
   text: "#f2f2f2"
   muted: "#b2b2b2"
   paper: "#e8e8e8"
@@ -32,7 +38,7 @@ spacing:
   desktop-gutter: "68px"
 components:
   button-primary:
-    backgroundColor: "{colors.signal}"
+    backgroundColor: "{colors.accent}"
     textColor: "{colors.canvas}"
     rounded: "{rounded.square}"
     height: "53px"
@@ -41,7 +47,7 @@ components:
 
 # CX Compute Exchange
 
-The B200 price chart is the first product object on the home page. The user-selected AI-generated Hour Dial emblem is the CX mark, shown transparently on the website and in the favicon. Black-backed logo treatments are reserved for social assets. Black, white, and gray keep the interface quiet. Copy is short on operating surfaces; detailed terms belong in docs.
+The B200 price chart is the first product object on the home page. The user-selected AI-generated Hour Dial emblem is the CX mark, shown transparently on the website and in the favicon. Black-backed logo treatments are reserved for social assets. Graphite, white, and gray keep the interface quiet; NVIDIA green accents the mark's center square, live reference data, selected states, focus, and primary actions. Market candles use familiar teal for upward moves and red for downward moves. Third-party marks keep their own brand colors. Copy is short on operating surfaces; detailed terms belong in docs.
 
 ## Layout
 
@@ -52,7 +58,7 @@ The B200 price chart is the first product object on the home page. The user-sele
 
 ## Asset use
 
-Keep `assets/plates/gpu-b200.png` as the B200 illustration. Do not replace it with newly generated GPUs. The selected Hour Dial image is at `public/brand/cx-emblem.png`; the three original concepts remain in `references/logo-options/`. The official full-color Meteora logo from `MeteoraAg/brand-kit` is used alongside its DBC attribution. Graphic variety comes from the emblem, chart, simple grid, and token-pair composition.
+Keep `assets/plates/gpu-b200.png` as the B200 illustration. Do not replace it with newly generated GPUs. The local green trial is at `public/brand/cx-emblem-green.png`; the original white-center mark remains at `public/brand/cx-emblem.png`, and the three original concepts remain in `references/logo-options/`. The official full-color Meteora logo from `MeteoraAg/brand-kit` is used alongside its DBC attribution. Graphic variety comes from the emblem, chart, simple grid, and token-pair composition.
 
 ## Truth constraints
 
