@@ -53,9 +53,10 @@ of oracle, reserve, redemption, fee, and upgrade controls before deploying.
 The compiled Mainnet program is 410,520 bytes. Solana Mainnet currently
 requires 2.087154 SOL held in the program accounts and another 2.086280 SOL
 temporarily for the upload buffer. The deployment peak is about 4.173433 SOL,
-plus setup account rent and transaction fees. Fund the deployer to at least
-6 SOL total, with a larger operating buffer for future migrations. Re-run the
-preflight before deployment because network rent and wallet balance can change.
+plus about 0.028 SOL of initial config, feed, mint, vault, and DBC account rent,
+and transaction fees. Fund the deployer to at least 6 SOL total, with a larger
+operating buffer for future migrations. Re-run the preflight before deployment
+because network rent and wallet balance can change.
 
 ## Deploy and initialize
 
