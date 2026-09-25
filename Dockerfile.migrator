@@ -1,0 +1,11 @@
+FROM node:22.13-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY scripts/auto-migrate.mjs scripts/auto-migrate-core.mjs ./scripts/
+COPY deployment ./deployment
+
+CMD ["node", "scripts/auto-migrate.mjs"]
