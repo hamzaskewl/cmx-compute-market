@@ -50,11 +50,12 @@ and `.so` must be verified against the source and the generated mainnet program
 ID. Run the local validator test (`anchor test`) and a full independent review
 of oracle, reserve, redemption, fee, and upgrade controls before deploying.
 
-The previous Devnet program occupies about 464 KB. Solana Mainnet currently
-requires about 2.36 SOL of permanent rent at that size and may require another
-2.36 SOL temporarily for the upload buffer, plus setup rent and transaction
-fees. The final binary determines the exact amount. Fund the deployer to at
-least 6 SOL total, with a larger operating buffer for future migrations.
+The compiled Mainnet program is 410,520 bytes. Solana Mainnet currently
+requires 2.087154 SOL held in the program accounts and another 2.086280 SOL
+temporarily for the upload buffer. The deployment peak is about 4.173433 SOL,
+plus setup account rent and transaction fees. Fund the deployer to at least
+6 SOL total, with a larger operating buffer for future migrations. Re-run the
+preflight before deployment because network rent and wallet balance can change.
 
 ## Deploy and initialize
 

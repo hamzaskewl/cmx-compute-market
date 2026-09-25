@@ -51,3 +51,10 @@ jobs:
           path: |
             target/deploy/gpu_market.so
             target/idl/gpu_market.json
+      - name: Prepare isolated validator keys
+        run: |
+          mkdir -p .keys
+          node --input-type=module -e 'import { Keypair } from "@solana/web3.js"; import { writeFileSync } from "node:fs"; for (const file of [".keys/testnet-deployer.json", "target/deploy/gpu_market-keypair.json"]) writeFileSync(file, JSON.stringify([...Keypair.generate().secretKey]));'
+          anchor keys sync
+      - name: Exercise collateral and fee paths on local validator
+        run: anchor test

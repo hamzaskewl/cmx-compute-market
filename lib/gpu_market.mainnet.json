@@ -222,19 +222,19 @@
             ]
           }
         },
-      {
-        "name": "quote_mint",
-        "writable": true
-      },
-      {
-        "name": "program",
-        "address": "7M2BCLQXQpoGu4V8tcfZ4Hheu95kJfwYHyTVhUGhPPA5"
-      },
-      {
-        "name": "program_data"
-      },
-      {
-        "name": "authority",
+        {
+          "name": "quote_mint",
+          "writable": true
+        },
+        {
+          "name": "program",
+          "address": "7M2BCLQXQpoGu4V8tcfZ4Hheu95kJfwYHyTVhUGhPPA5"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "authority",
           "writable": true,
           "signer": true
         },
@@ -494,56 +494,6 @@
       ]
     },
     {
-      "name": "update_price",
-      "discriminator": [
-        61,
-        34,
-        117,
-        155,
-        75,
-        34,
-        123,
-        208
-      ],
-      "accounts": [
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "feed",
-          "writable": true
-        },
-        {
-          "name": "oracle_authority",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "price_micro_usd",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "set_authorities",
       "discriminator": [
         124,
@@ -595,6 +545,56 @@
         {
           "name": "new_fee_recipient",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_price",
+      "discriminator": [
+        61,
+        34,
+        117,
+        155,
+        75,
+        34,
+        123,
+        208
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "feed",
+          "writable": true
+        },
+        {
+          "name": "oracle_authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "price_micro_usd",
+          "type": "u64"
         }
       ]
     }
@@ -657,14 +657,14 @@
   ],
   "errors": [
     {
+      "code": 6000,
       "name": "InvalidQuoteMint",
-      "msg": "Quote mint must have six decimals",
-      "code": 6000
+      "msg": "Quote mint must have six decimals"
     },
     {
+      "code": 6001,
       "name": "InvalidFeeRecipient",
-      "msg": "Fee recipient cannot be the default address",
-      "code": 6001
+      "msg": "Fee recipient cannot be the default address"
     },
     {
       "code": 6002,
