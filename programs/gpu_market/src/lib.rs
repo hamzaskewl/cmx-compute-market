@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Burn, Mint, MintTo, Token, TokenAccount, TransferChecked};
+use crate::program::GpuMarket;
 
 declare_id!("7M2BCLQXQpoGu4V8tcfZ4Hheu95kJfwYHyTVhUGhPPA5");
 
