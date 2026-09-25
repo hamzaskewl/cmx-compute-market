@@ -1,21 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MarketChart } from "@/components/market-chart";
-import { CXMark } from "@/components/site-header";
+import { SiteHeader } from "@/components/site-header";
 import { useWallet } from "@/components/wallet-context";
 import {
   dbcMarketBalances,
   loadDbcMarket,
   loadDeployment,
   migrateDbcMarket,
+  tradeDammMarket,
   tradeDbcMarket,
   type DbcMarket,
   type Deployment,
 } from "@/lib/chain-client";
 import type { MarketTrade } from "@/lib/market-types";
+import { amountFormatIssue, maxTokenAmount, slippageIssue, tokenAmountIssue } from "@/lib/transaction-constraints";
 import styles from "@/app/market.module.css";
 
 function short(address: string) {
@@ -67,14 +68,16 @@ function withTrades(market: DbcMarket, candidates: MarketTrade[]) {
   const history = chronological.map((trade) => ({
     timestamp: trade.timestamp,
     priceInPair: trade.priceInPair,
+    priceReliable: trade.priceReliable,
     volumeQuote: trade.quoteAmount,
     side: trade.side,
   }));
-  const firstPrice = history[0]?.priceInPair;
-  const lastPrice = history.at(-1)?.priceInPair;
+  const pricedTrades = chronological.filter((trade) => trade.priceReliable !== false);
+  const firstPrice = pricedTrades[0]?.priceInPair;
+  const lastPrice = market.priceInPair;
   return {
     ...market,
-    changePercent: firstPrice && lastPrice && history.length > 1
+    changePercent: firstPrice && lastPrice && pricedTrades.length > 1
       ? ((lastPrice - firstPrice) / firstPrice) * 100
       : null,
     history,
@@ -90,6 +93,7 @@ function mergeMarketSnapshot(current: DbcMarket, snapshot: DbcMarket) {
     {
       ...current,
       ...snapshot,
+      activityLoaded: current.activityLoaded || snapshot.activityLoaded,
       createdAt: snapshot.createdAt ?? current.createdAt,
     },
     [...snapshot.trades, ...current.trades],
@@ -101,31 +105,77 @@ function mergeLiveTrade(market: DbcMarket, trade: MarketTrade): DbcMarket {
   return withTrades(market, [trade, ...market.trades]);
 }
 
-export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
+export function MarketTerminal({ initialMarket, b200ReferencePrice: initialB200ReferencePrice }: {
   initialMarket: DbcMarket;
   b200ReferencePrice: number | null;
 }) {
   const [market, setMarket] = useState(initialMarket);
+  const [b200ReferencePrice, setB200ReferencePrice] = useState(initialB200ReferencePrice);
   const [deployment, setDeployment] = useState<Deployment | null>(null);
   const { address: wallet, connect } = useWallet();
   const [mode, setMode] = useState<"buy" | "sell">("buy");
-  const [amount, setAmount] = useState("1");
-  const [balances, setBalances] = useState({ b200: 0, token: 0 });
+  const [amountUnit, setAmountUnit] = useState<"input" | "output">("input");
+  const [amount, setAmount] = useState("");
+  const [slippage, setSlippage] = useState("1");
+  const [balances, setBalances] = useState({ b200: 0, token: 0, sol: 0 });
+  const [balancesReady, setBalancesReady] = useState(false);
+  const [balanceError, setBalanceError] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("Connect a wallet to trade.");
   const [signature, setSignature] = useState<string | null>(null);
   const [partialFill, setPartialFill] = useState<{ spent: number; unspent: number } | null>(null);
   const [lastLiveSignature, setLastLiveSignature] = useState<string | null>(null);
   const [chartSource, setChartSource] = useState<"official" | "gmgn">("official");
+  const [launchNotice, setLaunchNotice] = useState("");
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("cx-launch-notice");
+    if (!stored) return;
+    sessionStorage.removeItem("cx-launch-notice");
+    try {
+      const notice = JSON.parse(stored) as { pool?: string; message?: string; at?: number };
+      if (notice.pool !== initialMarket.address || !notice.message || !notice.at || Date.now() - notice.at > 60_000) return;
+      // The toast is transient state transferred from the launch route.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLaunchNotice(notice.message);
+      const timer = window.setTimeout(() => setLaunchNotice(""), 6000);
+      return () => window.clearTimeout(timer);
+    } catch { /* Ignore expired or malformed transient notices. */ }
+  }, [initialMarket.address]);
 
   useEffect(() => {
     loadDeployment().then(setDeployment).catch(() => setMessage("The market deployment is temporarily unavailable."));
   }, []);
 
   useEffect(() => {
+    const refreshReference = async () => {
+      try {
+        const response = await fetch("/api/indices/b200", { cache: "no-store" });
+        if (!response.ok) return;
+        const snapshot = await response.json() as { price?: number };
+        const price = snapshot.price;
+        if (typeof price === "number" && Number.isFinite(price) && price > 0) setB200ReferencePrice(price);
+      } catch {
+        // Keep the last valid reference while the oracle endpoint recovers.
+      }
+    };
+    void refreshReference();
+    const timer = setInterval(() => { void refreshReference(); }, 300_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     if (!deployment || !wallet) return;
-    dbcMarketBalances(deployment, initialMarket).then(setBalances).catch(() => setMessage("Could not load wallet balances."));
+    let active = true;
+    // Prevent previous account balances from enabling a trade during refresh.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBalancesReady(false);
+    setBalanceError("");
+    dbcMarketBalances(deployment, initialMarket).then((next) => {
+      if (active) { setBalances(next); setBalancesReady(true); }
+    }).catch(() => { if (active) setBalanceError("Could not check your balance. Refresh the page."); });
+    return () => { active = false; };
   }, [deployment, initialMarket, wallet]);
 
   const refreshMarket = useCallback(async (expectedSignature?: string) => {
@@ -143,7 +193,7 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
   }, [deployment, market.address, wallet]);
 
   useEffect(() => {
-    const source = new EventSource(`/api/markets/${market.address}/stream`);
+    const source = new EventSource(`/api/markets/${market.address}/stream${market.migrated ? "?migrated=1" : ""}`);
     source.addEventListener("snapshot", (event) => {
       const snapshot = JSON.parse((event as MessageEvent<string>).data) as DbcMarket;
       setMarket((current) => mergeMarketSnapshot(current, snapshot));
@@ -161,7 +211,7 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
       source.close();
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     };
-  }, [market.address, refreshMarket]);
+  }, [market.address, market.migrated, refreshMarket]);
 
   const run = async (label: string, task: () => Promise<void>) => {
     setBusy(label);
@@ -186,15 +236,30 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
 
   const handleTrade = () => run("trade", async () => {
     if (!deployment || !wallet) throw new Error("Connect a wallet before trading.");
-    const result = await tradeDbcMarket(deployment, market, mode, Number(amount));
+    const currentBalances = await dbcMarketBalances(deployment, market);
+    setBalances(currentBalances); setBalancesReady(true);
+    const inputSymbol = mode === "buy" ? "cmB200" : market.symbol;
+    const currentProblem = amountUnit === "input"
+      ? tokenAmountIssue(amount, mode === "buy" ? currentBalances.b200 : currentBalances.token, inputSymbol)
+      : amountFormatIssue(amount) || ((mode === "buy" ? currentBalances.b200 : currentBalances.token) <= 0 ? `You need ${inputSymbol} to trade.` : null);
+    if (currentProblem) throw new Error(currentProblem);
+    if (currentBalances.sol < 0.00001) throw new Error("Add a little SOL for network fees.");
+    const slippagePercent = Number(slippage);
+    const slippageBps = Math.round(slippagePercent * 100);
+    if (!Number.isFinite(slippagePercent) || slippagePercent < 0 || slippagePercent >= 100) {
+      throw new Error("Enter slippage from 0% up to, but below, 100%.");
+    }
+    const result = market.migrated
+      ? await tradeDammMarket(deployment, market, mode, Number(amount), slippageBps, amountUnit === "output")
+      : await tradeDbcMarket(deployment, market, mode, Number(amount), slippageBps, amountUnit === "output");
     setSignature(result.signature);
-    const indexed = await refreshMarket(result.signature);
+    const indexed = await refreshMarket(result.signature).catch(() => false);
     const output = result.estimatedOut.toLocaleString(undefined, { maximumFractionDigits: 6 });
     if (!indexed) {
-      setMessage("Trade settled. Market data is still syncing.");
+      setMessage("Trade submitted. Market data is syncing.");
       return;
     }
-    if (mode === "buy" && result.unusedInput > 0) {
+    if (!market.migrated && mode === "buy" && result.unusedInput > 0) {
       setPartialFill({ spent: result.actualInput, unspent: result.unusedInput });
       setMessage(`Final buy partially filled at the curve boundary. Received approximately ${output} tokens.`);
     } else {
@@ -215,7 +280,7 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
   const latest = market.trades[0];
   const change = market.changePercent;
   const progress = Math.min(100, Math.max(0, market.progressPercent));
-  const createdLabel = market.createdAt ? new Date(market.createdAt).toLocaleString() : "Unresolved";
+  const createdLabel = market.createdAt ? new Date(market.createdAt).toLocaleString() : market.activityLoaded ? "Unavailable" : "Loading…";
   const status = market.migrated
     ? "DAMM v2"
     : market.migrationReady
@@ -227,32 +292,44 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
     ? `https://explorer.solana.com/address/${market.graduatedPool}${explorerCluster}`
     : null;
   const gmgnChartUrl = `https://www.gmgn.cc/kline/sol/${market.mint}?theme=dark&interval=1S`;
+  const inputSymbol = mode === "buy" ? "cmB200" : market.symbol;
+  const outputSymbol = mode === "buy" ? market.symbol : "cmB200";
+  const inputBalance = mode === "buy" ? balances.b200 : balances.token;
+  const amountNumber = Number(amount);
+  const estimatedInput = amountUnit === "output" && Number.isFinite(amountNumber) && amountNumber > 0 && market.priceInPair > 0
+    ? mode === "buy" ? amountNumber * market.priceInPair : amountNumber / market.priceInPair
+    : null;
+  const amountProblem = wallet
+    ? amountUnit === "input"
+      ? tokenAmountIssue(amount, balancesReady ? inputBalance : null, inputSymbol)
+      : amountFormatIssue(amount)
+        || (balancesReady && inputBalance <= 0 ? `You need ${inputSymbol} to trade.` : null)
+        || (balancesReady && estimatedInput !== null && estimatedInput > inputBalance ? `Not enough ${inputSymbol} for this amount.` : null)
+    : null;
+  const tradeProblem = wallet
+    ? balanceError || amountProblem || slippageIssue(slippage)
+      || (balancesReady && balances.sol < 0.00001 ? "Add a little SOL for network fees." : null)
+    : null;
 
   return (
     <main className={styles.page}>
-      <header className={styles.masthead}>
-        <Link className={styles.brand} href="/"><CXMark className={styles.brandMark} /><span>Compute Exchange</span></Link>
-        <div className={styles.marketCrumb}><Link href="/markets">Markets</Link><span>/</span><strong>{market.name}</strong></div>
-        <button className={styles.walletButton} disabled={busy === "connect"} onClick={handleConnect} type="button">
-          {wallet ? short(wallet) : busy === "connect" ? "Connecting…" : "Connect wallet"}
-        </button>
-      </header>
+      <SiteHeader />
+      {launchNotice && <div aria-live="polite" className={styles.launchToast} role="status"><span>{launchNotice}</span><button aria-label="Dismiss notification" onClick={() => setLaunchNotice("")} type="button">×</button></div>}
 
       <section className={styles.identityStrip}>
         <div className={styles.tokenIdentity}>
           {market.logo ? (
-            <Image alt={`${market.name} logo`} className={styles.tokenLogo} height={58} onError={(event) => { event.currentTarget.src = "/brand/cx-emblem.png"; }} referrerPolicy="no-referrer" src={market.logo} unoptimized width={58} />
+            <Image alt={`${market.name} logo`} className={styles.tokenLogo} height={58} onError={(event) => { event.currentTarget.src = "/brand/cx-emblem-green.png"; }} referrerPolicy="no-referrer" src={market.logo} unoptimized width={58} />
           ) : <span className={styles.tokenGlyph}>{market.name.slice(0, 2).toUpperCase()}</span>}
-          <div><h1>{market.name}</h1><p>{short(market.mint)} / cmB200</p></div>
+          <div><h1>{market.name} <span>${market.symbol}</span></h1><p>{short(market.mint)} / cmB200 · {market.migrated ? "DAMM v2" : "Bonding curve"}</p></div>
         </div>
         <div className={styles.primaryQuote}>
-          <span>Curve price</span>
+          <span>Price</span>
           <strong>{formatPrice(market.priceInPair)} cmB200</strong>
           <small>{usdPrice === null ? "USD unavailable" : `≈ ${formatUsd(usdPrice)}`}</small>
         </div>
-        <div className={styles.identityMetric}><span>Volume</span><strong>{market.volumeQuote.toFixed(6)} cmB200</strong><small>{b200Usd(market.volumeQuote, b200ReferencePrice)} · {market.tradeCount} swaps</small></div>
-        <div className={styles.identityMetric}><span>History change</span><strong className={change !== null && change < 0 ? styles.negative : styles.positive}>{change === null ? "—" : `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`}</strong><small>First to latest indexed swap</small></div>
-        <div className={styles.identityMetric}><span>Market</span><strong>{status}</strong><small>{market.migrated ? "Liquidity pool" : market.migrationReady ? "Ready for DAMM v2" : "Trading"}</small></div>
+        <div className={styles.identityMetric}><span>Market cap now</span><strong>{market.marketCapQuote === null ? "—" : b200Usd(market.marketCapQuote, b200ReferencePrice)}</strong><small>{market.marketCapQuote === null ? "Unavailable" : `${market.marketCapQuote.toLocaleString("en-US", { maximumFractionDigits: 2 })} cmB200`}</small></div>
+        <div className={styles.identityMetric}><span>Change</span><strong className={change !== null && change < 0 ? styles.negative : styles.positive}>{change === null ? "—" : `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`}</strong><small>{market.activityLoaded ? `${market.tradeCount} trades · ${market.volumeQuote.toFixed(4)} cmB200 vol.` : "Loading trade history…"}</small></div>
       </section>
 
       <section className={styles.terminalGrid}>
@@ -293,33 +370,33 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
               </div>
             </section>
           ) : (
-            <MarketChart b200ReferencePrice={b200ReferencePrice} currentPrice={market.priceInPair} history={market.history} />
+            <MarketChart activityLoaded={market.activityLoaded} b200ReferencePrice={b200ReferencePrice} currentPrice={market.priceInPair} history={market.history} />
           )}
 
           <section className={styles.tapePanel}>
             <div className={styles.sectionHeader}>
-              <div><h2>Trades</h2><p>New swaps appear automatically.</p></div>
+              <div><h2>Trades</h2></div>
               <button disabled={busy !== null} onClick={() => void run("refresh", async () => { await refreshMarket(); })} type="button">{busy === "refresh" ? "Refreshing…" : "Refresh"}</button>
             </div>
             {market.trades.length ? (
               <div aria-live="polite" className={styles.tradeTable}>
-                <div aria-hidden="true" className={styles.tradeHead}><span>Time</span><span>Side</span><span>Price</span><span>Token amount</span><span>B200 amount</span><span>Transaction</span></div>
+                <div aria-hidden="true" className={styles.tradeHead}><span>Time</span><span>Side</span><span>Price</span><span>{market.symbol}</span><span>cmB200</span><span>Transaction</span></div>
                 {market.trades.map((trade) => (
                   <div className={`${styles.tradeRow} ${trade.signature === lastLiveSignature ? styles.tradeRowLive : ""}`} key={trade.signature}>
                     <span>{new Date(trade.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                     <strong className={trade.side === "buy" ? styles.positive : styles.negative}>{trade.side.toUpperCase()}</strong>
-                    <span className={styles.b200Cell}>{formatPrice(trade.priceInPair)}<small>{b200Usd(trade.priceInPair, b200ReferencePrice)}</small></span>
+                    <span className={styles.b200Cell} title={trade.priceReliable === false ? "This tiny trade is below cmB200 price precision." : undefined}>{trade.priceReliable === false ? "—" : formatPrice(trade.priceInPair)}{trade.priceReliable !== false && <small>{b200Usd(trade.priceInPair, b200ReferencePrice)}</small>}</span>
                     <span>{trade.baseAmount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
                     <span className={styles.b200Cell}>{trade.quoteAmount.toFixed(6)}<small>{b200Usd(trade.quoteAmount, b200ReferencePrice)}</small></span>
                     <a href={`https://explorer.solana.com/tx/${trade.signature}${explorerCluster}`} rel="noreferrer" target="_blank">{short(trade.signature)} ↗</a>
                   </div>
                 ))}
               </div>
-            ) : <div className={styles.tapeEmpty}>No swaps yet.</div>}
+            ) : <div className={styles.tapeEmpty}>{market.activityLoaded ? "No swaps yet." : "Loading trades…"}</div>}
           </section>
 
           <section className={styles.detailPanel}>
-            <div className={styles.sectionHeader}><div><h2>Market registry</h2><p>Pool identifiers and public launch metadata.</p></div></div>
+            <div className={styles.sectionHeader}><div><h2>Details</h2></div></div>
             <dl className={styles.detailGrid}>
               <div><dt>Pool</dt><dd><a href={`https://explorer.solana.com/address/${market.address}${explorerCluster}`} rel="noreferrer" target="_blank">{short(market.address)} ↗</a></dd></div>
               <div><dt>Token mint</dt><dd><a href={`https://explorer.solana.com/address/${market.mint}${explorerCluster}`} rel="noreferrer" target="_blank">{short(market.mint)} ↗</a></dd></div>
@@ -338,33 +415,41 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
         </div>
 
         <aside className={styles.tradeRail}>
-          <div className={styles.railState}><strong>{status}</strong><small>{latest ? `Last swap ${new Date(latest.timestamp).toLocaleTimeString()}` : "No swaps yet"}</small></div>
+          <div className={styles.railState}><strong>{status}</strong><small>{latest ? `Last swap ${new Date(latest.timestamp).toLocaleTimeString()}` : market.activityLoaded ? "No swaps yet" : "Loading trades…"}</small></div>
           <div className={styles.tradeTabs}>
-            <button aria-pressed={mode === "buy"} disabled={market.migrationReady || market.migrated} onClick={() => setMode("buy")} type="button">Buy</button>
-            <button aria-pressed={mode === "sell"} disabled={market.migrationReady || market.migrated} onClick={() => setMode("sell")} type="button">Sell</button>
+            <button aria-pressed={mode === "buy"} disabled={market.migrationReady && !market.migrated} onClick={() => { setMode("buy"); setAmountUnit("input"); setAmount(""); }} type="button">Buy</button>
+            <button aria-pressed={mode === "sell"} disabled={market.migrationReady && !market.migrated} onClick={() => { setMode("sell"); setAmountUnit("input"); setAmount(""); }} type="button">Sell</button>
           </div>
           <div className={styles.balanceGrid}>
             <span>cmB200 <strong>{wallet ? balances.b200.toFixed(4) : "—"}</strong><small>{wallet ? b200Usd(balances.b200, b200ReferencePrice) : "—"}</small></span>
-            <span>Token <strong>{wallet ? balances.token.toFixed(4) : "—"}</strong></span>
+            <span>{market.symbol} <strong>{wallet ? balances.token.toFixed(4) : "—"}</strong></span>
+          </div>
+          <div aria-label="Choose amount unit" className={styles.amountUnitTabs}>
+            <button aria-pressed={amountUnit === "input"} onClick={() => { setAmountUnit("input"); setAmount(""); }} type="button">{mode === "buy" ? "Pay cmB200" : `Sell ${market.symbol}`}</button>
+            <button aria-pressed={amountUnit === "output"} onClick={() => { setAmountUnit("output"); setAmount(""); }} type="button">{mode === "buy" ? `Get ${market.symbol}` : "Get cmB200"}</button>
           </div>
           <label className={styles.amountField}>
-            <span>{mode === "buy" ? "cmB200 in" : "Launch token in"}</span>
-            <input disabled={market.migrationReady || market.migrated} inputMode="decimal" min="0" onChange={(event) => setAmount(event.target.value)} step="any" type="number" value={amount} />
-            {mode === "buy" && Number(amount) > 0 && <small>{b200Usd(Number(amount), b200ReferencePrice)}</small>}
+            <span>{amountUnit === "input" ? `Amount in ${inputSymbol}` : `Amount in ${outputSymbol}`}</span>
+            <input disabled={market.migrationReady && !market.migrated} inputMode="decimal" min="0" onChange={(event) => setAmount(event.target.value)} step="any" type="number" value={amount} />
+            {amountUnit === "input" && mode === "buy" && amountNumber > 0 && <small>{b200Usd(amountNumber, b200ReferencePrice)}</small>}
+            {amountUnit === "output" && estimatedInput !== null && <small>About {estimatedInput.toLocaleString("en-US", { maximumFractionDigits: 6 })} {inputSymbol} before fees and price impact; exact quote checked before signing.</small>}
           </label>
-          <div className={styles.quotePreview}>
-            <span>Current curve</span><strong>{formatPrice(market.priceInPair)} cmB200</strong>
-            <small>{b200Usd(market.priceInPair, b200ReferencePrice)}</small>
-            {!market.migrationReady && !market.migrated && <small>1% maximum slippage. A final buy can partially fill at the curve boundary; unspent cmB200 stays in your wallet.</small>}
+          {wallet && balancesReady && amountUnit === "input" && <button className={styles.amountMax} disabled={busy !== null || inputBalance <= 0} onClick={() => setAmount(maxTokenAmount(inputBalance))} type="button">Use max {inputSymbol}</button>}
+          <div className={styles.slippageControl}>
+            <div className={styles.slippageHeading}><span>Slippage</span><strong>{slippage}%</strong></div>
+            <div className={styles.slippageOptions}>
+              {["0.5", "1", "3"].map((value) => <button aria-pressed={slippage === value} key={value} onClick={() => setSlippage(value)} type="button">{value}%</button>)}
+              <label><span>Custom %</span><input aria-label="Custom slippage percent" inputMode="decimal" min="0" onChange={(event) => setSlippage(event.target.value)} step="any" type="number" value={slippage} /></label>
+            </div>
           </div>
-          {market.migrated && graduatedPoolUrl ? (
-            <a className={styles.tradeButtonLink} href={market.dexScreenerUrl ?? graduatedPoolUrl} rel="noreferrer" target="_blank">Open DAMM v2 market ↗</a>
-          ) : market.migrationReady ? (
-            <button className={styles.tradeButton} disabled={busy !== null || !wallet} onClick={handleMigration} type="button">
+          {!market.migrated && !market.migrationReady && <p className={styles.tradeHint}>A final buy may partially fill; unspent cmB200 stays in your wallet.</p>}
+          {wallet && tradeProblem && <p className={styles.tradeHint} role="status">{tradeProblem}</p>}
+          {market.migrationReady && !market.migrated ? (
+            <button className={styles.tradeButton} disabled={busy !== null} onClick={wallet ? handleMigration : handleConnect} type="button">
               {!wallet ? "Connect wallet to migrate" : busy === "migrate" ? "Migrating…" : "Migrate to DAMM v2"}
             </button>
           ) : (
-            <button className={styles.tradeButton} disabled={busy !== null || !wallet} onClick={handleTrade} type="button">
+            <button className={styles.tradeButton} disabled={busy !== null || Boolean(wallet && tradeProblem)} onClick={wallet ? handleTrade : handleConnect} type="button">
               {!wallet ? "Connect wallet to trade" : busy === "trade" ? "Submitting…" : `${mode === "buy" ? "Buy" : "Sell"}`}
             </button>
           )}
@@ -377,7 +462,13 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
             {signature && <a href={`https://explorer.solana.com/tx/${signature}${explorerCluster}`} rel="noreferrer" target="_blank">View transaction ↗</a>}
           </div>}
           <div className={styles.graduationBlock}>
-            <div><span>Bonding curve</span><strong>{graduationLabel(progress, market.migrated, market.migrationReady)}</strong></div>
+            <div><span>{market.usesCurrentCurve ? "Bonding curve" : "Earlier curve"}</span><strong>{graduationLabel(progress, market.migrated, market.migrationReady)}</strong></div>
+            {market.openingMarketCapQuote !== null && market.graduationMarketCapQuote !== null && (
+              <div className={styles.curveTargets}>
+                <span>Curve start<strong>{b200Usd(market.openingMarketCapQuote, b200ReferencePrice)}</strong><small>{market.openingMarketCapQuote.toLocaleString("en-US")} cmB200</small></span>
+                <span>Bond target<strong>{b200Usd(market.graduationMarketCapQuote, b200ReferencePrice)}</strong><small>{market.graduationMarketCapQuote.toLocaleString("en-US")} cmB200</small></span>
+              </div>
+            )}
             <div className={styles.progressTrack}><span style={{ width: `${progress}%` }} /></div>
             <p><span>{market.quoteReserve.toFixed(6)} cmB200</span><small>{b200Usd(market.quoteReserve, b200ReferencePrice)}</small>{market.migrated
               ? "Liquidity is active on DAMM v2."

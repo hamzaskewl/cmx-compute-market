@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { getMarketRpcConnection, getMarketTrade } from "@/lib/dbc-markets";
-import type { MarketTrade } from "@/lib/market-types";
+import type { DbcMarket, MarketTrade } from "@/lib/market-types";
 
 type TradeListener = (trade: MarketTrade) => void;
 
@@ -48,11 +48,11 @@ function remember(signature: string) {
   return true;
 }
 
-async function publishSignature(address: string, entry: StreamEntry, signature: string) {
+async function publishSignature(address: string, entry: StreamEntry, signature: string, market: DbcMarket) {
   if (store.seen.has(signature) || store.processing.has(signature)) return;
   store.processing.add(signature);
   try {
-    const trade = await getMarketTrade(address, signature);
+    const trade = await getMarketTrade(address, signature, market);
     if (!trade) {
       const misses = (store.misses.get(signature) ?? 0) + 1;
       if (misses >= 3) {
@@ -74,11 +74,11 @@ async function publishSignature(address: string, entry: StreamEntry, signature: 
   }
 }
 
-async function reconcile(address: string, entry: StreamEntry) {
+async function reconcile(address: string, entry: StreamEntry, market: DbcMarket) {
   if (entry.polling || !entry.listeners.size) return;
   entry.polling = true;
   try {
-    const connection = await getMarketRpcConnection();
+    const connection = await getMarketRpcConnection(market.cluster);
     const signatures = await connection.getSignaturesForAddress(
       new PublicKey(address),
       { limit: 12 },
@@ -88,7 +88,7 @@ async function reconcile(address: string, entry: StreamEntry) {
       [...signatures]
         .reverse()
         .filter((item) => !item.err)
-        .map((item) => publishSignature(address, entry, item.signature)),
+        .map((item) => publishSignature(address, entry, item.signature, market)),
     );
   } catch {
     // WebSocket delivery remains primary; the next reconciliation tick retries
@@ -98,20 +98,25 @@ async function reconcile(address: string, entry: StreamEntry) {
   }
 }
 
-async function start(address: string, entry: StreamEntry) {
+async function start(address: string, entry: StreamEntry, market: DbcMarket) {
   if (entry.poller || entry.subscriptionId !== null || entry.starting) return;
-  const connection = await getMarketRpcConnection();
-  entry.poller = setInterval(() => void reconcile(address, entry), 3_000);
-  void reconcile(address, entry);
+  const connection = await getMarketRpcConnection(market.cluster);
+  entry.poller = setInterval(() => void reconcile(address, entry, market), 3_000);
+  void reconcile(address, entry, market);
 
-  // Polling is a fully independent confirmed-chain fallback, so clients do not
-  // stay stuck in "connecting" when a public WebSocket endpoint returns 429.
+  // Public devnet WebSockets frequently reject subscriptions with 429 and then
+  // reconnect indefinitely. Use the polling path unless a provider WSS URL is
+  // explicitly configured; production still gets low-latency log delivery.
+  const wsConfigured = market.cluster === "devnet"
+    ? process.env.SOLANA_DEVNET_WSS_URL || process.env.SOLANA_WSS_URL
+    : process.env.SOLANA_MAINNET_WSS_URL;
+  if (!wsConfigured) return;
   try {
     const subscriptionId = connection.onLogs(
       new PublicKey(address),
       (notification) => {
         if (notification.err) return;
-        void publishSignature(address, entry, notification.signature);
+        void publishSignature(address, entry, notification.signature, market);
       },
       "confirmed",
     );
@@ -121,7 +126,7 @@ async function start(address: string, entry: StreamEntry) {
   }
 }
 
-async function stop(address: string, entry: StreamEntry) {
+async function stop(address: string, entry: StreamEntry, market: DbcMarket) {
   if (entry.listeners.size) return;
   if (entry.poller) {
     clearInterval(entry.poller);
@@ -130,15 +135,18 @@ async function stop(address: string, entry: StreamEntry) {
   const subscriptionId = entry.subscriptionId;
   entry.subscriptionId = null;
   if (subscriptionId !== null) {
-    const connection = await getMarketRpcConnection();
+    const connection = await getMarketRpcConnection(market.cluster);
     await connection.removeOnLogsListener(subscriptionId).catch(() => undefined);
   }
   if (!entry.listeners.size) store.entries.delete(address);
 }
 
-export function subscribeMarketTrades(address: string, listener: TradeListener) {
-  const normalized = new PublicKey(address).toBase58();
-  let entry = store.entries.get(normalized);
+export function subscribeMarketTrades(market: DbcMarket, listener: TradeListener) {
+  const normalized = new PublicKey(
+    market.migrated && market.graduatedPool ? market.graduatedPool : market.address,
+  ).toBase58();
+  const key = `${market.cluster}:${normalized}`;
+  let entry = store.entries.get(key);
   if (!entry) {
     entry = {
       listeners: new Set(),
@@ -148,14 +156,14 @@ export function subscribeMarketTrades(address: string, listener: TradeListener) 
       poller: null,
       polling: false,
     };
-    store.entries.set(normalized, entry);
+    store.entries.set(key, entry);
   }
   if (entry.teardown) {
     clearTimeout(entry.teardown);
     entry.teardown = null;
   }
   entry.listeners.add(listener);
-  const ready = start(normalized, entry);
+  const ready = start(normalized, entry, market);
 
   return {
     ready,
@@ -164,7 +172,7 @@ export function subscribeMarketTrades(address: string, listener: TradeListener) 
       if (!entry || entry.listeners.size) return;
       entry.teardown = setTimeout(() => {
         entry!.teardown = null;
-        void stop(normalized, entry!);
+        void stop(key, entry!, market);
       }, 10_000);
     },
   };

@@ -26,6 +26,7 @@
     "@irys/web-upload": "0.0.15",
     "@irys/web-upload-solana": "0.1.8",
     "@metamask/connect-solana": "^2.1.1",
+    "@meteora-ag/cp-amm-sdk": "^1.4.10",
     "@meteora-ag/dynamic-bonding-curve-sdk": "1.5.12",
     "@shadcn/react": "^0.3.0",
     "@solana/spl-token": "0.4.14",
@@ -70,5 +71,8 @@
   "overrides": {
     "rpc-websockets": "9.3.8"
   },
-  "type": "module"
+  "type": "module",
+  "optionalDependencies": {
+    "utf-8-validate": "^5.0.10"
+  }
 }

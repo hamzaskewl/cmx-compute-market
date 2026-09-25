@@ -4,6 +4,8 @@
 
 :root {
   --background: #131313;
+  --brand-green: #76b900;
+  --brand-green-hover: #89cf0d;
   --foreground: #f2f2f2;
   --card: #232323;
   --card-foreground: #f2f2f2;
@@ -20,7 +22,7 @@
   --destructive: #9a9a9a;
   --border: #4d4d4d;
   --input: #4d4d4d;
-  --ring: #f2f2f2;
+  --ring: var(--brand-green);
   --radius: 0.5rem;
 }
 
@@ -54,8 +56,8 @@ button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 a { color: inherit; }
-::selection { background: #f2f2f2; color: #131313; }
+::selection { background: var(--brand-green); color: #131313; }
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: #131313; }
 ::-webkit-scrollbar-thumb { background: #4d4d4d; border: 2px solid #131313; }
-:focus-visible { outline: 2px solid #f2f2f2; outline-offset: 4px; }
+:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 4px; }

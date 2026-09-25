@@ -49,24 +49,48 @@
   ],
   "dbc": {
     "programId": "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN",
-    "config": "3zuTPcfBc6mLZRBeP9hdQYt5bPzb8kLvGiyxDRpBRZuv",
+    "config": "uDooYdQ1kJ2jwXeV415hQ21fChsVHVps39syicTqriQ",
     "quoteSymbol": "B200",
     "quoteMint": "3qfxX58amBwm5Y2YMaVV9iY85ezxDbQxGXHztMVnXFEe",
-    "tradingFeeBps": 200,
+    "tradingFeeBps": 125,
     "migrationFeeOption": 2,
-    "migrationQuoteThreshold": "240253073",
+    "migrationQuoteThreshold": "1308004194",
     "creatorTradingFeePercentage": 50,
-    "initialMarketCapInQuote": 100,
-    "migrationMarketCapInQuote": 1000,
+    "initialMarketCapInQuote": 447,
+    "migrationMarketCapInQuote": 6166,
+    "previousConfigs": [
+      {
+        "programId": "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN",
+        "config": "3zuTPcfBc6mLZRBeP9hdQYt5bPzb8kLvGiyxDRpBRZuv",
+        "quoteSymbol": "B200",
+        "quoteMint": "3qfxX58amBwm5Y2YMaVV9iY85ezxDbQxGXHztMVnXFEe",
+        "tradingFeeBps": 200,
+        "migrationFeeOption": 2,
+        "migrationQuoteThreshold": "240253073",
+        "creatorTradingFeePercentage": 50,
+        "initialMarketCapInQuote": 100,
+        "migrationMarketCapInQuote": 1000,
+        "migration": "DAMM v2",
+        "migratedLiquidity": "50% creator locked / 50% CMX locked",
+        "signature": "2Rria6L9QLqfvG41fNgfqjqcUoMJYPECMcmdcQGXGupn5mKcmGbqt3BeHPFasM4j7JDQjzvTnKN6aL25pMMCLco3",
+        "probePool": "EmRzxH22dNtSJD3sDGER9Ayom9F6EXCgWEucQzg5d4WY",
+        "probeBaseMint": "mARLVxKPNdTD7Hc4h5UTbjtE1euSqAKtiUKeBo1B9L2",
+        "probeSignatures": {
+          "launch": "HsUCRFBqRHQ6TECQkXSBEZsoAoytPpek1NoVeDEwfAxzZJ1ZyDuxzLwhkeN4Jx5NXoi4xUe3mqMJw4PFbVg1eiY",
+          "metadata": "3dwnuhU53ZZCJHCnwLHKfZx5NCnbdsu5y1yCLodiVnMsZpHGwGwiDhBRR5Rjeb5rbemZrhQA4woontjdsX81NGN8",
+          "sell": "4RweiPrRP5hmxERNkzx5hbfCFA5k1dSB8jRdeGwNdK1NtaAqTUetyW2qCu3e9icEb2tjZzdgXFmc1Jn2ZhxcE6fb"
+        }
+      }
+    ],
     "migration": "DAMM v2",
     "migratedLiquidity": "50% creator locked / 50% CMX locked",
-    "signature": "2Rria6L9QLqfvG41fNgfqjqcUoMJYPECMcmdcQGXGupn5mKcmGbqt3BeHPFasM4j7JDQjzvTnKN6aL25pMMCLco3",
     "probePool": "EmRzxH22dNtSJD3sDGER9Ayom9F6EXCgWEucQzg5d4WY",
     "probeBaseMint": "mARLVxKPNdTD7Hc4h5UTbjtE1euSqAKtiUKeBo1B9L2",
     "probeSignatures": {
       "launch": "HsUCRFBqRHQ6TECQkXSBEZsoAoytPpek1NoVeDEwfAxzZJ1ZyDuxzLwhkeN4Jx5NXoi4xUe3mqMJw4PFbVg1eiY",
       "metadata": "3dwnuhU53ZZCJHCnwLHKfZx5NCnbdsu5y1yCLodiVnMsZpHGwGwiDhBRR5Rjeb5rbemZrhQA4woontjdsX81NGN8",
       "sell": "4RweiPrRP5hmxERNkzx5hbfCFA5k1dSB8jRdeGwNdK1NtaAqTUetyW2qCu3e9icEb2tjZzdgXFmc1Jn2ZhxcE6fb"
-    }
+    },
+    "signature": "3TcWwMjdtTb62cBYuHbeFzZ7xPJwTEfqFD37XJiLagCMDewkU8QBA5tvf5dT7vGzMhbsJrq9y7FmaXws1WcphBUp"
   }
 }

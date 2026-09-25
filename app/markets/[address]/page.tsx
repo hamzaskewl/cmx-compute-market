@@ -1,17 +1,14 @@
-import { notFound } from "next/navigation";
-import { MarketTerminal } from "@/components/market-terminal";
-import { getDbcMarket } from "@/lib/dbc-markets";
-import { getOrnnSnapshot } from "@/lib/ornn";
+import { MarketPageLoader } from "@/components/market-page-loader";
+import { NetworkUnavailable } from "@/components/network-unavailable";
+import { hasServerDeployment, readSelectedNetwork } from "@/lib/server-deployment";
 
 export const dynamic = "force-dynamic";
 
 export default async function MarketPage({ params }: {
   params: Promise<{ address: string }>;
 }) {
+  const network = await readSelectedNetwork();
+  if (!(await hasServerDeployment(network))) return <NetworkUnavailable network={network} />;
   const { address } = await params;
-  const market = await getDbcMarket(address).catch(() => null);
-  if (!market) notFound();
-  const snapshot = await getOrnnSnapshot().catch(() => null);
-  const b200ReferencePrice = snapshot?.indices.find((index) => index.symbol === "B200")?.price ?? null;
-  return <MarketTerminal b200ReferencePrice={b200ReferencePrice} initialMarket={market} />;
+  return <MarketPageLoader address={address} />;
 }

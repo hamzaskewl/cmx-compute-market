@@ -363,8 +363,8 @@ export function MarketWorkbench({ b200ReferencePrice }: { b200ReferencePrice: nu
             <span className={styles.logoBrowse}>Choose file</span>
           </label>
           <dl className={styles.launchTerms}>
-            <div><dt>Opening market cap</dt><dd><span>100 cmB200</span><small>{b200Usd(100, b200ReferencePrice)}</small></dd></div>
-            <div><dt>Graduation market cap</dt><dd><span>1,000 cmB200</span><small>{b200Usd(1_000, b200ReferencePrice)}</small></dd></div>
+            <div><dt>Opening market cap</dt><dd><span>{deployment?.dbc.initialMarketCapInQuote.toLocaleString("en-US") ?? "—"} cmB200</span><small>{deployment ? b200Usd(deployment.dbc.initialMarketCapInQuote, b200ReferencePrice) : ""}</small></dd></div>
+            <div><dt>Graduation market cap</dt><dd><span>{deployment?.dbc.migrationMarketCapInQuote.toLocaleString("en-US") ?? "—"} cmB200</span><small>{deployment ? b200Usd(deployment.dbc.migrationMarketCapInQuote, b200ReferencePrice) : ""}</small></dd></div>
             <div><dt>Curve fee split</dt><dd>50% creator / 50% CMX*</dd></div>
             <div><dt>Post-migration LP</dt><dd>50 / 50 permanently locked</dd></div>
           </dl>

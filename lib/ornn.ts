@@ -25,6 +25,20 @@ export type OrnnHistoryPoint = {
   price: number;
 };
 
+export async function getOrnnB200Price(): Promise<number> {
+  const response = await fetch("https://api.ornnai.com/api/gpu/B200", {
+    next: { revalidate: 300 },
+    signal: AbortSignal.timeout(4_000),
+  });
+  if (!response.ok) throw new Error(`Ornn returned ${response.status} for B200`);
+  const payload = await response.json() as { data?: { index_value?: number } };
+  const price = payload.data?.index_value;
+  if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) {
+    throw new Error("Ornn omitted the B200 price");
+  }
+  return price;
+}
+
 export async function getOrnnSnapshot(): Promise<OrnnSnapshot> {
   const responses = await Promise.allSettled(
     GPU_TYPES.map(async ({ symbol, name }) => {

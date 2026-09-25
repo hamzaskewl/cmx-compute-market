@@ -4,6 +4,7 @@ export type MarketTrade = {
   side: "buy" | "sell";
   priceInPair: number;
   baseAmount: number;
+  priceReliable?: boolean;
   quoteAmount: number;
 };
 
@@ -11,6 +12,7 @@ export type MarketPricePoint = {
   timestamp: number;
   priceInPair: number;
   volumeQuote: number;
+  priceReliable?: boolean;
   side: "buy" | "sell";
 };
 
@@ -37,10 +39,15 @@ export type DbcMarket = {
   cluster: SolanaCluster;
   pairSymbol: "B200";
   name: string;
+  symbol: string;
   website: string;
   logo: string;
   feePercent: number;
   priceInPair: number;
+  marketCapQuote: number | null;
+  openingMarketCapQuote: number | null;
+  graduationMarketCapQuote: number | null;
+  usesCurrentCurve: boolean;
   quoteReserve: number;
   progressPercent: number;
   migrationReady: boolean;
@@ -48,6 +55,7 @@ export type DbcMarket = {
   graduatedPool: string | null;
   createdAt: number | null;
   lastTradeAt: number | null;
+  activityLoaded: boolean;
   tradeCount: number;
   volumeQuote: number;
   changePercent: number | null;

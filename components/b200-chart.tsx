@@ -29,12 +29,12 @@ export function B200Chart({ history, price }: { history: OrnnHistoryPoint[]; pri
     <div className={styles.chartArea}>
       {points.length > 1 ? <ResponsiveContainer height="100%" width="100%">
         <AreaChart data={points} margin={{ top: 14, right: 7, left: 0, bottom: 2 }}>
-          <defs><linearGradient id="b200Glow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#dbdbdb" stopOpacity=".32"/><stop offset="95%" stopColor="#dbdbdb" stopOpacity="0"/></linearGradient></defs>
+          <defs><linearGradient id="b200Glow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#76b900" stopOpacity=".32"/><stop offset="95%" stopColor="#76b900" stopOpacity="0"/></linearGradient></defs>
           <CartesianGrid stroke="#303030" strokeDasharray="2 5" vertical={false} />
           <XAxis axisLine={false} dataKey="timestamp" minTickGap={32} tick={{ fill: "#8c8c8c", fontSize: 10 }} tickFormatter={(value: string) => new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })} tickLine={false} />
           <YAxis axisLine={false} domain={["dataMin - 0.15", "dataMax + 0.15"]} orientation="right" tick={{ fill: "#8c8c8c", fontSize: 10 }} tickFormatter={(value: number) => `$${value.toFixed(2)}`} tickLine={false} width={54} />
           <Tooltip content={({ active, payload, label }) => active && payload?.[0]?.value ? <div className={styles.tooltip}><span>{new Date(String(label)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span><strong>${Number(payload[0].value).toFixed(4)}</strong></div> : null} cursor={{ stroke: "#c5c5c5" }} />
-          <Area dataKey="price" dot={false} fill="url(#b200Glow)" isAnimationActive={false} stroke="#f2f2f2" strokeWidth={2.5} type="monotone" />
+          <Area dataKey="price" dot={false} fill="url(#b200Glow)" isAnimationActive={false} stroke="#76b900" strokeWidth={2.5} type="monotone" />
         </AreaChart>
       </ResponsiveContainer> : <p className={styles.chartMissing}>Price history is temporarily unavailable.</p>}
     </div>

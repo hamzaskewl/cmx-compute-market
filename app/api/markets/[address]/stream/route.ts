@@ -16,6 +16,8 @@ export async function GET(
     return Response.json({ error: "Invalid market address." }, { status: 400 });
   }
   const network = await getMarketCluster();
+  const market = await getDbcMarket(address, { includeActivity: false }).catch(() => null);
+  if (!market) return Response.json({ error: "Market stream is temporarily unavailable." }, { status: 503 });
 
   const encoder = new TextEncoder();
   let dispose = () => {};
@@ -30,7 +32,7 @@ export async function GET(
           closed = true;
         }
       };
-      const subscription = subscribeMarketTrades(address, (trade) => send("trade", trade));
+      const subscription = subscribeMarketTrades(market, (trade) => send("trade", trade));
       const heartbeat = setInterval(() => send("heartbeat", { timestamp: Date.now() }), 20_000);
 
       dispose = () => {
@@ -50,7 +52,7 @@ export async function GET(
             ? "configured-rpc-websocket"
             : "solana-websocket",
         });
-        void getDbcMarket(address, { fresh: true })
+        void getDbcMarket(address, { fresh: true, network })
           .then((snapshot) => {
             if (snapshot) send("snapshot", snapshot);
           })

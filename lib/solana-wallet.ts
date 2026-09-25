@@ -14,7 +14,8 @@ export type SolanaWallet = {
 
 type PhantomProvider = SolanaWallet & {
   isPhantom?: boolean;
-  connect(): Promise<{ publicKey: PublicKey }>;
+  connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }>;
+  disconnect(): Promise<void>;
   signMessage(message: Uint8Array, display?: string): Promise<{ signature: Uint8Array }>;
 };
 
@@ -26,23 +27,26 @@ declare global {
 }
 
 let connectedWallet: SolanaWallet | null = null;
+let connectedKind: WalletKind | null = null;
+let disconnectMetaMask: (() => Promise<void>) | null = null;
 
 export function activeWallet(): SolanaWallet {
   if (!connectedWallet) throw new Error("Connect a Solana wallet first.");
   return connectedWallet;
 }
 
-export async function connectSolanaWallet(kind: WalletKind): Promise<PublicKey> {
+export async function connectSolanaWallet(kind: WalletKind, silent = false): Promise<PublicKey> {
   if (kind === "phantom") {
     const provider = window.phantom?.solana ?? window.solana;
     if (!provider?.isPhantom) throw new Error("Phantom is not installed. Add the browser extension, then try again.");
-    const { publicKey } = await provider.connect();
+    const { publicKey } = await provider.connect(silent ? { onlyIfTrusted: true } : undefined);
     connectedWallet = {
       publicKey,
       signMessage: (message) => provider.signMessage(message, "utf8"),
       signTransaction: (transaction) => provider.signTransaction(transaction),
       signAllTransactions: (transactions) => provider.signAllTransactions(transactions),
     };
+    connectedKind = kind;
     return publicKey;
   }
 
@@ -53,7 +57,7 @@ export async function connectSolanaWallet(kind: WalletKind): Promise<PublicKey> 
       url: window.location.origin,
       iconUrl: `${window.location.origin}/brand/cx-emblem.png`,
     },
-    api: { supportedNetworks: { devnet: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com" } },
+    api: { supportedNetworks: { devnet: `${window.location.origin}/api/rpc` } },
   });
   const wallet = client.getWallet();
   const features = wallet.features as unknown as {
@@ -61,8 +65,9 @@ export async function connectSolanaWallet(kind: WalletKind): Promise<PublicKey> 
     "solana:signTransaction": { signTransaction(input: { account: { address: string }; transaction: Uint8Array; chain: string }): Promise<Array<{ signedTransaction: Uint8Array }>> };
     "solana:signMessage": { signMessage(input: { account: { address: string }; message: Uint8Array }): Promise<Array<{ signature: Uint8Array }>> };
   };
-  const { accounts } = await features["standard:connect"].connect();
-  const account = accounts[0];
+  const account = silent
+    ? wallet.accounts[0]
+    : (await features["standard:connect"].connect()).accounts[0];
   if (!account) throw new Error("MetaMask did not return a Solana account.");
   const publicKey = new PublicKey(account.address);
   const chain = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1";
@@ -96,5 +101,27 @@ export async function connectSolanaWallet(kind: WalletKind): Promise<PublicKey> 
       return signed;
     },
   };
+  connectedKind = kind;
+  disconnectMetaMask = () => client.disconnect();
   return publicKey;
+}
+
+export async function restoreSolanaWallet(kind: WalletKind): Promise<PublicKey | null> {
+  try {
+    return await connectSolanaWallet(kind, true);
+  } catch {
+    return null;
+  }
+}
+
+export async function disconnectSolanaWallet() {
+  const previousKind = connectedKind;
+  connectedWallet = null;
+  connectedKind = null;
+  if (previousKind === "phantom") {
+    await (window.phantom?.solana ?? window.solana)?.disconnect();
+  } else if (previousKind === "metamask") {
+    await disconnectMetaMask?.();
+    disconnectMetaMask = null;
+  }
 }
