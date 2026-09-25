@@ -1,15 +1,11 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { readServerDeployment } from "@/lib/server-deployment";
+import type { Deployment } from "@/lib/chain-client";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const data = await readFile(
-      path.join(process.cwd(), "deployment", "devnet.json"),
-      "utf8",
-    );
-    return Response.json(JSON.parse(data));
+    return Response.json(await readServerDeployment<Deployment>());
   } catch {
     return Response.json(
       { error: "The Solana market deployment is not configured yet" },

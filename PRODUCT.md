@@ -12,7 +12,7 @@ web
 
 ## Product Purpose
 
-- Confirmed: expose GPU-hour reference indexes derived from Ornn data and make them usable as the reference layer for Solana markets.
+- Confirmed: make the B200 GPU-hour reference and its cmB200 market asset the center of the public experience.
 - Confirmed: the immediate goal is a credible MVP that can be evaluated before any mainnet launch.
 
 ## Positioning
@@ -25,7 +25,7 @@ web
 - Confirmed: Ornn OCPI is the external index source.
 - Confirmed: the current public beta runs with test assets on Solana devnet; no mainnet funds are involved.
 - Confirmed: cmB200 is the quote asset for permissionless Meteora Dynamic Bonding Curve markets, with DAMM v2 as the post-curve liquidity destination.
-- Inferred: visitors first inspect current GPU-hour reference values, then assess the market mechanism and its real devnet history.
+- Confirmed: visitors first see a B200 price chart, then can connect a wallet, mint cmB200, or open a separate Meteora DBC launchpad.
 
 ## Capabilities and Constraints
 
@@ -40,9 +40,13 @@ web
 ## Brand Commitments
 
 - Confirmed: the product is a branded compute-commodities exchange, inspired by the information clarity and authority of Commodities Market without copying its identity.
-- Confirmed: GPU representations should be compact, very simple pixel or voxel marks with clear H100, H200, B200, A100, and RTX 5090 labels.
-- Confirmed: avoid the incumbent CMX mark, oversized photoreal GPU art, ugly utility typography, and an unbranded generic-dashboard appearance.
-- Confirmed: the experience should feel clean and simple without becoming sparse or anonymous.
+- Confirmed: the working name is CX, Compute Exchange, with a black, white, and gray palette. The user selected the AI-generated Hour Dial emblem (concept 3) as the brand mark.
+- Confirmed: the emblem appears without a background tile throughout the website and as the transparent favicon; social profile and campaign graphics place the same symbol on black.
+- Confirmed: keep the existing pixel B200 illustration. Additional GPU art is not needed; visual variety should come from logos, typography, chart treatment, and simple product graphics.
+- Confirmed: show only B200 on the home page. Other GPUs may appear off-home as clearly disabled coming-soon markets.
+- Confirmed: reduce marketing and protocol jargon on the home page; keep detailed terms in docs.
+- Confirmed: the separate launchpad should update a token preview as its fields change and display the official Meteora identity.
+- Confirmed: the launchpad preview shows actual Ornn B200 GPU-hour price history, clearly distinguished from any new token's price.
 
 ## Evidence on Hand
 
@@ -58,7 +62,7 @@ web
 
 - Truth before density: a shorter page with real data is preferable to a fuller page with simulated activity.
 - Make the reference asset legible before explaining the protocol around it.
-- Treat each GPU index as an identifiable instrument, not decorative hardware photography.
+- Treat B200 as the active instrument; other GPU names are roadmap items until enabled.
 - Present deployment and trading states only when the underlying system can verify them.
 - Let exact onchain state govern transaction boundaries and migration; percentages and progress meters are explanatory displays only.
 - Keep the visual system ownable enough to be recognized without the logo.

@@ -60,7 +60,7 @@ function volumeData(candles: readonly MarketCandle[]) {
   return candles.map((candle) => ({
     time: toTime(candle.timestamp),
     value: candle.volumeQuote,
-    color: candle.close >= candle.open ? "#47705d" : "#754c52",
+    color: candle.close >= candle.open ? "#666666" : "#555555",
   }));
 }
 
@@ -122,25 +122,25 @@ export function MarketChart({
       autoSize: true,
       layout: {
         attributionLogo: true,
-        background: { color: "#192428", type: ColorType.Solid },
+        background: { color: "#222222", type: ColorType.Solid },
         fontFamily: "var(--type-data), monospace",
-        textColor: "#8f9aa7",
+        textColor: "#999999",
       },
       grid: {
-        horzLines: { color: "#2f3d43", style: LineStyle.Dotted },
-        vertLines: { color: "#27353b", style: LineStyle.Dotted },
+        horzLines: { color: "#3a3a3a", style: LineStyle.Dotted },
+        vertLines: { color: "#323232", style: LineStyle.Dotted },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        horzLine: { color: "#7c8890", labelBackgroundColor: "#536169", style: LineStyle.Dashed },
-        vertLine: { color: "#7c8890", labelBackgroundColor: "#536169", style: LineStyle.Dashed },
+        horzLine: { color: "#868686", labelBackgroundColor: "#5f5f5f", style: LineStyle.Dashed },
+        vertLine: { color: "#868686", labelBackgroundColor: "#5f5f5f", style: LineStyle.Dashed },
       },
       rightPriceScale: {
-        borderColor: "#435159",
+        borderColor: "#424242",
         scaleMargins: { bottom: 0.24, top: 0.1 },
       },
       timeScale: {
-        borderColor: "#435159",
+        borderColor: "#424242",
         rightOffset: 5,
         secondsVisible: interval < 60,
         timeVisible: true,
@@ -152,20 +152,20 @@ export function MarketChart({
     let lineSeries: ISeriesApi<"Line"> | null = null;
     if (chartStyle === "candles") {
       candleSeries = chart.addSeries(CandlestickSeries, {
-        borderDownColor: "#ef777f",
-        borderUpColor: "#83d6a1",
-        downColor: "#d95f69",
+        borderDownColor: "#919191",
+        borderUpColor: "#c1c1c1",
+        downColor: "#7a7a7a",
         priceFormat: { minMove: 0.0000000001, precision: 10, type: "price" },
         priceLineVisible: false,
-        upColor: "#74c993",
-        wickDownColor: "#ef777f",
-        wickUpColor: "#83d6a1",
+        upColor: "#b3b3b3",
+        wickDownColor: "#919191",
+        wickUpColor: "#c1c1c1",
       });
       candleSeries.setData(candleData(candlesRef.current));
       candleSeriesRef.current = candleSeries;
     } else {
       lineSeries = chart.addSeries(LineSeries, {
-        color: "#9ba2ff",
+        color: "#a7a7a7",
         lastPriceAnimation: LastPriceAnimationMode.OnDataUpdate,
         lineWidth: 2,
         priceFormat: { minMove: 0.0000000001, precision: 10, type: "price" },
@@ -178,14 +178,14 @@ export function MarketChart({
     const priceSeries = candleSeries ?? lineSeries!;
     const curveLine = priceSeries.createPriceLine({
       axisLabelVisible: true,
-      color: "#8e95d8",
+      color: "#989898",
       lineStyle: LineStyle.Dashed,
       lineWidth: 1,
       price: currentPriceRef.current,
       title: "CURVE",
     });
     const volumeSeries = chart.addSeries(HistogramSeries, {
-      color: "#41525a",
+      color: "#4f4f4f",
       priceFormat: { type: "volume" },
       priceScaleId: "volume",
     });

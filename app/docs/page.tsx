@@ -1,92 +1,79 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { getOrnnSnapshot } from "@/lib/ornn";
+import { SiteHeader } from "@/components/site-header";
 import styles from "./docs.module.css";
 
-function Mark() {
-  return (
-    <svg aria-hidden="true" className={styles.mark} viewBox="0 0 28 28">
-      <path d="M20.75 7.25A9.5 9.5 0 1 0 20.75 20.75" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.6" />
-      <path d="m18.25 9.5 4.75 4.5-4.75 4.5" fill="none" stroke="#8e95ff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.6" />
-    </svg>
-  );
-}
+export const metadata: Metadata = {
+  title: "How CX works | Compute Exchange",
+  description: "How cmB200, Meteora DBC markets, and the proposed compute flywheel work on CX devnet.",
+};
 
 const sections = [
-  { id: "overview", label: "Overview" },
-  { id: "reference", label: "Reference data" },
-  { id: "vault", label: "Mint and redeem" },
-  { id: "markets", label: "Markets" },
-  { id: "status", label: "Network" },
+  { id: "asset", label: "The B200 asset" },
+  { id: "launch", label: "Meteora DBC" },
+  { id: "flywheel", label: "Proposed flywheel" },
+  { id: "mainnet", label: "Before mainnet" },
 ];
 
-function formatUsd(value: number | null) {
-  return value === null
-    ? "USD reference unavailable"
-    : value.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
-}
-
-export default async function DocsPage() {
-  const snapshot = await getOrnnSnapshot().catch(() => null);
-  const b200 = snapshot?.indices.find((index) => index.symbol === "B200")?.price ?? null;
-  return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <Link className={styles.brand} href="/">
-          <Mark />
-          <span>Compute Market</span>
-        </Link>
-        <Link className={styles.back} href="/">Back to indexes <span aria-hidden="true">→</span></Link>
-      </header>
-
-      <div className={styles.docsShell}>
-        <aside className={styles.sidebar}>
-          <p>Protocol docs</p>
-          <nav aria-label="Documentation sections">
-            {sections.map((section) => <a href={`#${section.id}`} key={section.id}>{section.label}</a>)}
-          </nav>
-          <a className={styles.sourceLink} href="#reference">Pricing methodology <span aria-hidden="true">↓</span></a>
-        </aside>
-
-        <article className={styles.content}>
-          <section className={styles.intro} id="overview">
-            <h1>GPU-hour indexes<br />for Solana markets.</h1>
-            <p className={styles.lead}>Compute Market turns composite GPU reference prices into onchain index assets. cmB200 markets are available now; H100, H200, A100 and RTX 5090 are research previews.</p>
-          </section>
-
-          <section className={styles.section} id="reference">
-            <div>
-              <h2>Reference data</h2>
-              <p>Reference prices are aggregated across multiple market inputs into one USD-per-GPU-hour composite. The web app refreshes every five minutes and shows no replacement value when the feed is unavailable.</p>
-              <div className={styles.callout}><strong>Available now</strong><span>cmB200 · H100, H200, A100 and RTX 5090 coming soon</span></div>
-            </div>
-          </section>
-
-          <section className={styles.section} id="vault">
-            <div>
-              <h2>Mint and redeem</h2>
-              <p>The current Solana program models each index with its own quote vault. A mint deposits quote assets and receives index tokens at the fresh reference price. A redemption burns index tokens and returns available quote liquidity.</p>
-              <p>The prototype program applies a 0.30% index-swap fee. Redemption is bounded by real vault liquidity; the oracle itself does not guarantee a peg.</p>
-            </div>
-          </section>
-
-          <section className={styles.section} id="markets">
-            <div>
-              <h2>Markets</h2>
-              <p>Permissionless launch tokens use Meteora Dynamic Bonding Curve with cmB200 as the quote asset. The CMX config charges a fixed 2.00% curve fee and gives creators 50% of the creator/partner remainder after Meteora&apos;s protocol share.</p>
-              <p>The curve opens at a 100 cmB200 market cap ({formatUsd(b200 === null ? null : b200 * 100)}) and targets a 1,000 cmB200 graduation market cap ({formatUsd(b200 === null ? null : b200 * 1_000)}). These are market-cap targets, not the amount deposited into the curve. For this curve shape, the onchain migration threshold is 240.253073 cmB200 ({formatUsd(b200 === null ? null : b200 * 240.253073)}).</p>
-              <p>The last buy can partially fill at the curve boundary, leaving the unused cmB200 in the trader&apos;s wallet. After the threshold is reached, liquidity migrates to DAMM v2. Creator and CMX each receive 50% of the liquidity position, with both portions permanently locked.</p>
-            </div>
-          </section>
-
-          <section className={styles.section} id="status">
-            <div>
-              <h2>Network</h2>
-              <div className={styles.status}><span aria-hidden="true" />Public beta · Solana devnet</div>
-              <p>The current public beta uses test assets. The same DBC program and DAMM v2 migration path are deployed on Solana mainnet, but this release does not involve mainnet funds.</p>
-            </div>
-          </section>
-        </article>
-      </div>
-    </main>
-  );
+export default function DocsPage() {
+  return <main className={styles.page}>
+    <SiteHeader />
+    <div className={styles.shell}>
+      <aside className={styles.sidebar}>
+        <strong>CX / DOCS</strong>
+        <nav aria-label="Documentation sections">{sections.map((section) => <a href={`#${section.id}`} key={section.id}>{section.label}</a>)}</nav>
+        <Link href="/launch">Open launchpad ↗</Link>
+      </aside>
+      <article className={styles.article}>
+        <header className={styles.intro}>
+          <span>DEVNET FIELD GUIDE</span>
+          <h1>How CX works</h1>
+          <p>A B200 GPU-hour reference becomes the quote asset for markets launched on Meteora. Here is what is live today and what still needs to be built.</p>
+        </header>
+        <nav aria-label="On this page" className={styles.contents}>
+          <span>ON THIS PAGE</span>
+          <div>{sections.map((section, index) => <a href={`#${section.id}`} key={section.id}><small>{String(index + 1).padStart(2, "0")}</small>{section.label}</a>)}</div>
+        </nav>
+        <section id="asset">
+          <span>THE REFERENCE ASSET</span>
+          <h2>Start with a B200 hour.</h2>
+          <p>cmB200 tracks the <a href="https://ornnai.com/" rel="noreferrer" target="_blank">Ornn B200 GPU-hour reference ↗</a>. You mint it by depositing test quote assets at the fresh onchain price and redeem it by burning cmB200 against available reserve liquidity. The current program charges 0.30% on mint and redeem.</p>
+          <div className={styles.assetMap} aria-label="B200 reference to market flow">
+            <div><small>01 / PRICE</small><strong>Ornn B200 index</strong><span>GPU-hour reference</span></div>
+            <b aria-hidden="true">→</b>
+            <div><small>02 / ASSET</small><strong>cmB200</strong><span>Mint and redeem on devnet</span></div>
+            <b aria-hidden="true">→</b>
+            <div><small>03 / PAIR</small><strong>Token / cmB200</strong><span>Markets on Meteora DBC</span></div>
+          </div>
+          <div className={styles.note}><strong>On devnet</strong><span>These are test assets. The quote token is a synthetic test mint, not mainnet USDC. The oracle provides a reference price; it does not guarantee redemption or a peg.</span></div>
+        </section>
+        <section id="launch">
+          <div className={styles.sectionTop}><span>THE LAUNCH</span><Image alt="Meteora" height={29} src="/brand/meteora.svg" width={125} /></div>
+          <h2>Launch with Meteora DBC.</h2>
+          <p>CX uses <a href="https://docs.meteora.ag/core-products/dbc/what-is-dbc" rel="noreferrer" target="_blank">Meteora Dynamic Bonding Curve ↗</a> to launch a token with cmB200 as its quote asset. The current curve starts at a 100 cmB200 market cap and targets 1,000 cmB200 at graduation. Liquidity migrates to Meteora DAMM v2 after the curve completes.</p>
+          <p>You choose a name, ticker, image, description, and site. CX sets the curve and fees. The current curve fee is 2.00%; after Meteora&apos;s protocol share, the creator and CX split the remainder equally. Migrated liquidity positions are permanently locked under the current configuration.</p>
+          <Link className={styles.sectionLink} href="/launch">Create a market ↗</Link>
+        </section>
+        <section id="flywheel">
+          <span>THE PROPOSAL</span>
+          <h2>Put market value back to work.</h2>
+          <p>Markets paired with GPU-hours could direct a defined share of eligible fees into pair liquidity and, where the reserve design supports it, GPU collateral.</p>
+          <div className={styles.flow}><div><small>MARKET ACTIVITY</small><strong>Trade</strong><span>Meteora DBC and DAMM v2</span></div><b>→</b><div><small>RULED ALLOCATION</small><strong>Direct fees</strong><span>Defined share and controls</span></div><b>→</b><div><small>PRODUCTIVE RESERVE</small><strong>Reinforce</strong><span>Liquidity or eligible assets</span></div></div>
+          <div className={styles.note}><strong>Planned</strong><span>Automatic fee recycling and GPU purchases are not active. Allocation, custody, accounting, and onchain routing need a published design before this can be presented as live economics.</span></div>
+        </section>
+        <section id="mainnet">
+          <span>READINESS</span>
+          <h2>Before real funds.</h2>
+          <ul>
+            <li>Choose the real quote asset and replace the devnet synthetic mint and faucet.</li>
+            <li>Finalize and independently review vault, oracle, fee routing, and redemption controls.</li>
+            <li>Publish the flywheel percentage, custody model, eligible collateral, and disclosures.</li>
+            <li>Deploy a mainnet manifest and program; run complete market and migration tests and establish keeper monitoring.</li>
+          </ul>
+          <p>CX remains on Solana devnet while these are designed and tested.</p>
+        </section>
+      </article>
+    </div>
+  </main>;
 }

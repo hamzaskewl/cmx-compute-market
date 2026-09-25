@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MarketChart } from "@/components/market-chart";
+import { CXMark } from "@/components/site-header";
+import { useWallet } from "@/components/wallet-context";
 import {
-  connectWallet,
   dbcMarketBalances,
   loadDbcMarket,
   loadDeployment,
@@ -95,15 +96,6 @@ function mergeMarketSnapshot(current: DbcMarket, snapshot: DbcMarket) {
   );
 }
 
-function BrandMark() {
-  return (
-    <svg aria-hidden="true" className={styles.brandMark} viewBox="0 0 28 28">
-      <path d="M20.75 7.25A9.5 9.5 0 1 0 20.75 20.75" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.6" />
-      <path d="m18.25 9.5 4.75 4.5-4.75 4.5" fill="none" stroke="#8e95ff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.6" />
-    </svg>
-  );
-}
-
 function mergeLiveTrade(market: DbcMarket, trade: MarketTrade): DbcMarket {
   if (market.trades.some((item) => item.signature === trade.signature)) return market;
   return withTrades(market, [trade, ...market.trades]);
@@ -115,12 +107,12 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
 }) {
   const [market, setMarket] = useState(initialMarket);
   const [deployment, setDeployment] = useState<Deployment | null>(null);
-  const [wallet, setWallet] = useState<string | null>(null);
+  const { address: wallet, connect } = useWallet();
   const [mode, setMode] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState("1");
   const [balances, setBalances] = useState({ b200: 0, token: 0 });
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState("Connect Phantom to trade.");
+  const [message, setMessage] = useState("Connect a wallet to trade.");
   const [signature, setSignature] = useState<string | null>(null);
   const [partialFill, setPartialFill] = useState<{ spent: number; unspent: number } | null>(null);
   const [lastLiveSignature, setLastLiveSignature] = useState<string | null>(null);
@@ -130,6 +122,11 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
   useEffect(() => {
     loadDeployment().then(setDeployment).catch(() => setMessage("The market deployment is temporarily unavailable."));
   }, []);
+
+  useEffect(() => {
+    if (!deployment || !wallet) return;
+    dbcMarketBalances(deployment, initialMarket).then(setBalances).catch(() => setMessage("Could not load wallet balances."));
+  }, [deployment, initialMarket, wallet]);
 
   const refreshMarket = useCallback(async (expectedSignature?: string) => {
     let latest: DbcMarket | null = null;
@@ -180,15 +177,15 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
   };
 
   const handleConnect = () => run("connect", async () => {
-    const publicKey = await connectWallet();
+    const nextAddress = await connect();
+    if (!nextAddress) throw new Error("Wallet connection failed.");
     if (!deployment) throw new Error("The market deployment is still loading.");
-    setWallet(publicKey.toBase58());
     setBalances(await dbcMarketBalances(deployment, market));
     setMessage("Wallet connected.");
   });
 
   const handleTrade = () => run("trade", async () => {
-    if (!deployment || !wallet) throw new Error("Connect Phantom before trading.");
+    if (!deployment || !wallet) throw new Error("Connect a wallet before trading.");
     const result = await tradeDbcMarket(deployment, market, mode, Number(amount));
     setSignature(result.signature);
     const indexed = await refreshMarket(result.signature);
@@ -206,7 +203,7 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
   });
 
   const handleMigration = () => run("migrate", async () => {
-    if (!deployment || !wallet) throw new Error("Connect Phantom before migrating this market.");
+    if (!deployment || !wallet) throw new Error("Connect a wallet before migrating this market.");
     const result = await migrateDbcMarket(deployment, market);
     setSignature(result.signature);
     await refreshMarket();
@@ -234,17 +231,17 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
   return (
     <main className={styles.page}>
       <header className={styles.masthead}>
-        <Link className={styles.brand} href="/"><BrandMark /><span>Compute Market</span></Link>
-        <div className={styles.marketCrumb}><span>Markets</span><span>/</span><strong>{market.name}</strong></div>
+        <Link className={styles.brand} href="/"><CXMark className={styles.brandMark} /><span>Compute Exchange</span></Link>
+        <div className={styles.marketCrumb}><Link href="/markets">Markets</Link><span>/</span><strong>{market.name}</strong></div>
         <button className={styles.walletButton} disabled={busy === "connect"} onClick={handleConnect} type="button">
-          {wallet ? short(wallet) : busy === "connect" ? "Connecting…" : "Connect Phantom"}
+          {wallet ? short(wallet) : busy === "connect" ? "Connecting…" : "Connect wallet"}
         </button>
       </header>
 
       <section className={styles.identityStrip}>
         <div className={styles.tokenIdentity}>
           {market.logo ? (
-            <Image alt={`${market.name} logo`} className={styles.tokenLogo} height={58} onError={(event) => { event.currentTarget.src = "/favicon.svg"; }} referrerPolicy="no-referrer" src={market.logo} unoptimized width={58} />
+            <Image alt={`${market.name} logo`} className={styles.tokenLogo} height={58} onError={(event) => { event.currentTarget.src = "/brand/cx-emblem.png"; }} referrerPolicy="no-referrer" src={market.logo} unoptimized width={58} />
           ) : <span className={styles.tokenGlyph}>{market.name.slice(0, 2).toUpperCase()}</span>}
           <div><h1>{market.name}</h1><p>{short(market.mint)} / cmB200</p></div>
         </div>
@@ -263,7 +260,7 @@ export function MarketTerminal({ initialMarket, b200ReferencePrice }: {
           <nav aria-label="Chart data source" className={styles.chartSourceBar}>
             <div className={styles.chartSourceTabs}>
               <button aria-pressed={chartSource === "official"} onClick={() => setChartSource("official")} type="button">
-              CMX <span>Official</span>
+              CX <span>Official</span>
               </button>
               <button
                 aria-pressed={chartSource === "gmgn"}

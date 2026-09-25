@@ -1,6 +1,7 @@
 .git
 .next
 node_modules
+.env*
 .keys
 .openai
 .sites-runtime
@@ -16,3 +17,5 @@ worker
 coverage
 outputs
 work
+references
+social

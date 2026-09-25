@@ -4,12 +4,12 @@
   "programId": "BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG",
   "config": "5aTEHxDfiuf4fTPzcC4m3AdtLaEZRdgRWo5zRnD3hAaz",
   "quoteMint": "CSaRLZbWTqr7vzwx5FToUhcEeL1CrQa1oy5fzavagYvX",
-  "oracleUpdatedAt": "2026-09-15T20:00:00.000Z",
+  "oracleUpdatedAt": "2026-09-23T20:00:00.000Z",
   "indices": [
     {
       "symbol": "A100",
       "name": "A100 SXM4",
-      "price": 1.0225,
+      "price": 1.0329166666666667,
       "feed": "2oQEoaify48hYtbq46uFxdoaWfUn12Sv578oJc5oDbKJ",
       "mint": "86zggYxSYmcetszKMqr4cjtgfcPjsqPmGGVcRGpQppUA",
       "quoteVault": "3a2BTJ64uFXx71ax1KGD5XX5xAGheD7WTfKozvWP4DMK"
@@ -17,7 +17,7 @@
     {
       "symbol": "B200",
       "name": "B200",
-      "price": 7.214166666666666,
+      "price": 7.950833333333334,
       "feed": "4YsknDV9DkZ384PPcDMeP8rRnx23XRwmwT3QCBgbfnDC",
       "mint": "3qfxX58amBwm5Y2YMaVV9iY85ezxDbQxGXHztMVnXFEe",
       "quoteVault": "J4a9nvfCwCHEFzVBDdVFto5JjCgHhtHize6AP8djeyoJ"
@@ -25,7 +25,7 @@
     {
       "symbol": "H100",
       "name": "H100 SXM",
-      "price": 2.527083333333333,
+      "price": 3.049166666666667,
       "feed": "7tM4fU7FwKTAvPzhzqcyETYkZitUPKqywXro219WQxzF",
       "mint": "F4ncfnfYp1Ke3mRtwy8ZApz8dBNrh1UMZUQmsgvmrf5a",
       "quoteVault": "zpSu4nW4Er2rYQ6jAaYgSsfgtxhJ1LYWjAyPuARTXPq"
@@ -33,7 +33,7 @@
     {
       "symbol": "H200",
       "name": "H200",
-      "price": 4.6775,
+      "price": 5.015,
       "feed": "HHn1aBJUApLJKQMiQxp76456df76LdYWcwj9mkwSmHiY",
       "mint": "3XKJhiKgkGU5mRGiWPTWR1GqMNyjxSBSrZvcbBL8Bwis",
       "quoteVault": "BETdcDxDoz3RqFz6J6LqjjXC1ToTymovfhd1xczTdLnX"
@@ -41,7 +41,7 @@
     {
       "symbol": "5090",
       "name": "RTX 5090",
-      "price": 0.7058333333333333,
+      "price": 0.6458333333333334,
       "feed": "3ozV5Hq3Y3DnRdHdCJUtsK5QeXJJPPF7CYpZ64NS6Jio",
       "mint": "ACMh6QGDThbcAh8kc4UDiTXFt9aJWDVepMatFxXSVagX",
       "quoteVault": "GGPjSsQy5ZCNYyyeibVC3rn4azGbNbM4y91NSTYyfGLr"

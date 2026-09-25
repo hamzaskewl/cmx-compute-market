@@ -3,24 +3,24 @@
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
 :root {
-  --background: #192226;
-  --foreground: #f4f4f5;
-  --card: #1d282c;
-  --card-foreground: #f4f4f5;
-  --popover: #1d282c;
-  --popover-foreground: #f4f4f5;
-  --primary: #959cf7;
-  --primary-foreground: #10131c;
-  --secondary: #252f34;
-  --secondary-foreground: #f4f4f5;
-  --muted: #252f34;
-  --muted-foreground: #aeb8c9;
-  --accent: #959cf7;
-  --accent-foreground: #10131c;
-  --destructive: #ff7e87;
-  --border: #506068;
-  --input: #506068;
-  --ring: #a9afff;
+  --background: #131313;
+  --foreground: #f2f2f2;
+  --card: #232323;
+  --card-foreground: #f2f2f2;
+  --popover: #232323;
+  --popover-foreground: #f2f2f2;
+  --primary: #f2f2f2;
+  --primary-foreground: #131313;
+  --secondary: #313131;
+  --secondary-foreground: #f2f2f2;
+  --muted: #313131;
+  --muted-foreground: #b2b2b2;
+  --accent: #f2f2f2;
+  --accent-foreground: #131313;
+  --destructive: #9a9a9a;
+  --border: #4d4d4d;
+  --input: #4d4d4d;
+  --ring: #f2f2f2;
   --radius: 0.5rem;
 }
 
@@ -54,8 +54,8 @@ button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 a { color: inherit; }
-::selection { background: #959cf7; color: #10131c; }
+::selection { background: #f2f2f2; color: #131313; }
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #192226; }
-::-webkit-scrollbar-thumb { background: #53616a; border: 2px solid #192226; }
-:focus-visible { outline: 2px solid #a9afff; outline-offset: 4px; }
+::-webkit-scrollbar-track { background: #131313; }
+::-webkit-scrollbar-thumb { background: #4d4d4d; border: 2px solid #131313; }
+:focus-visible { outline: 2px solid #f2f2f2; outline-offset: 4px; }

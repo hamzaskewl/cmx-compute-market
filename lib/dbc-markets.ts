@@ -12,9 +12,8 @@ import {
   type TokenBalance,
 } from "@solana/web3.js";
 import BN from "bn.js";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import type { DbcMarket, MarketTrade, SolanaCluster } from "@/lib/market-types";
+import { readServerDeployment } from "@/lib/server-deployment";
 
 type DeploymentFile = {
   cluster: SolanaCluster;
@@ -71,9 +70,7 @@ async function retryRpc<T>(task: () => Promise<T>) {
 async function context(): Promise<MarketContext> {
   if (!contextPromise) {
     contextPromise = (async () => {
-      const deployment = JSON.parse(
-        await readFile(path.join(process.cwd(), "deployment", "devnet.json"), "utf8"),
-      ) as DeploymentFile;
+      const deployment = await readServerDeployment<DeploymentFile>();
       const connection = new Connection(
         process.env.SOLANA_RPC_URL ?? deployment.rpcUrl,
         {

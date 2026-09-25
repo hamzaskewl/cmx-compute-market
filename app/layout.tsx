@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Azeret_Mono, Onest } from "next/font/google";
+import { WalletProvider } from "@/components/wallet-context";
 import "./globals.css";
 
 const sans = Onest({
@@ -13,14 +14,14 @@ const data = Azeret_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Compute Market — GPU-hour indexes on Solana",
-  description: "Aggregated GPU-hour reference indexes for Solana compute markets.",
+  title: "CX — Compute Exchange",
+  description: "The market for GPU-hours. Mint cmB200 and launch compute pairs with Meteora DBC on Solana devnet.",
   other: {
     "codex-preview": "development",
   },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/brand/cx-emblem.png",
+    shortcut: "/brand/cx-emblem.png",
   },
 };
 
@@ -31,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sans.variable} ${data.variable}`}>{children}</body>
+      <body className={`${sans.variable} ${data.variable}`}><WalletProvider>{children}</WalletProvider></body>
     </html>
   );
 }

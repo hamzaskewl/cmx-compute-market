@@ -65,7 +65,7 @@ export async function getOrnnHistory(gpuName: string): Promise<OrnnHistoryPoint[
   const response = await fetch(
     `https://api.ornnai.com/api/gpu/${encodeURIComponent(gpuName)}/index-history`,
     {
-      next: { revalidate: 3_600 },
+      next: { revalidate: 300 },
       signal: AbortSignal.timeout(8_000),
     },
   );

@@ -196,6 +196,7 @@ export function MarketWorkbench({ b200ReferencePrice }: { b200ReferencePrice: nu
 
   const handleFaucet = () => run("faucet", async () => {
     if (!deployment) throw new Error("The market setup is still loading.");
+    if (deployment.cluster !== "devnet") throw new Error("The test faucet is available only on devnet.");
     const nextSignature = await claimTestUsdc(deployment);
     setMessage("10,000 test USDC claimed. This faucet is one-time per wallet.");
     await refreshWallet(deployment);
@@ -275,6 +276,7 @@ export function MarketWorkbench({ b200ReferencePrice }: { b200ReferencePrice: nu
 
       <div className={styles.networkStrip}>
         <strong>{programReady ? "B200 protocol" : "Loading B200 protocol"}</strong>
+        <span>{deployment ? (isMainnet ? "Solana mainnet" : "Solana devnet") : "Network loading"}</span>
         <span>Meteora DBC</span>
         <span>cmB200 quote</span>
         <span>2.00% launch fee</span>
@@ -305,9 +307,11 @@ export function MarketWorkbench({ b200ReferencePrice }: { b200ReferencePrice: nu
             <span>USDC <strong>{walletBalances.quote.toFixed(2)}</strong></span>
             <span>cmB200 <strong>{walletBalances.token.toFixed(4)}<small>{b200Usd(walletBalances.token, b200ReferencePrice)}</small></strong></span>
           </div>
-          <button className={styles.secondaryButton} disabled={!wallet || busy !== null} onClick={handleFaucet} type="button">
-            Claim 10,000 test USDC
-          </button>
+          {deployment?.cluster === "devnet" && (
+            <button className={styles.secondaryButton} disabled={!wallet || busy !== null} onClick={handleFaucet} type="button">
+              Claim 10,000 test USDC
+            </button>
+          )}
 
           <div className={styles.tradeTabs}>
             <button aria-pressed={indexMode === "buy"} onClick={() => setIndexMode("buy")} type="button">Buy cmB200</button>
@@ -385,7 +389,7 @@ export function MarketWorkbench({ b200ReferencePrice }: { b200ReferencePrice: nu
               <Link className={styles.marketRow} href={`/markets/${market.address}`} key={market.address}>
                 <span className={styles.marketIdentity}>
                   {market.logo ? (
-                    <Image alt="" className={styles.tokenLogo} height={42} onError={(event) => { event.currentTarget.src = "/favicon.svg"; }} referrerPolicy="no-referrer" src={market.logo} unoptimized width={42} />
+                    <Image alt="" className={styles.tokenLogo} height={42} onError={(event) => { event.currentTarget.src = "/brand/cx-emblem.png"; }} referrerPolicy="no-referrer" src={market.logo} unoptimized width={42} />
                   ) : <span className={styles.tokenGlyph}>{market.name.slice(0, 2).toUpperCase()}</span>}
                   <span><strong>{market.name}</strong><small>{short(market.mint)} · {market.migrated ? "DAMM v2" : "DBC curve"}</small></span>
                 </span>

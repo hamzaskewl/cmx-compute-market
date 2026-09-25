@@ -29,6 +29,7 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import idl from "./gpu_market.json";
+import { activeWallet, connectSolanaWallet, type WalletKind } from "./solana-wallet";
 import type { DbcMarket } from "./market-types";
 
 export type { DbcMarket, MarketPricePoint, MarketTrade } from "./market-types";
@@ -80,35 +81,9 @@ export type ProtocolStats = {
   coveragePercent: number | null;
 };
 
-type PhantomProvider = {
-  isPhantom?: boolean;
-  publicKey: PublicKey | null;
-  connect(): Promise<{ publicKey: PublicKey }>;
-  signMessage(message: Uint8Array, display?: string): Promise<{ signature: Uint8Array; publicKey?: PublicKey }>;
-  signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T>;
-  signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]>;
-};
-
-declare global {
-  interface Window {
-    phantom?: { solana?: PhantomProvider };
-    solana?: PhantomProvider;
-  }
-}
-
 const SCALE = 1_000_000;
 
-function phantom() {
-  const injected = window.phantom?.solana ?? window.solana;
-  if (!injected?.isPhantom) {
-    throw new Error("A Solana wallet was not found. Install Phantom, then reload.");
-  }
-  return injected;
-}
-
-export async function connectWallet() {
-  return (await phantom().connect()).publicKey;
-}
+export async function connectWallet(kind: WalletKind = "phantom") { return connectSolanaWallet(kind); }
 
 export async function loadDeployment(): Promise<Deployment> {
   const response = await fetch("/api/deployment", { cache: "no-store" });
@@ -126,8 +101,7 @@ export async function verifyDeployment(deployment: Deployment) {
 }
 
 function client(deployment: Deployment) {
-  const injected = phantom();
-  if (!injected.publicKey) throw new Error("Connect your wallet first.");
+  const injected = activeWallet();
   const wallet = {
     publicKey: injected.publicKey,
     signTransaction: <T extends Transaction | VersionedTransaction>(transaction: T) =>
@@ -145,7 +119,7 @@ function client(deployment: Deployment) {
   });
   return {
     connection,
-    program: new anchor.Program(idl as anchor.Idl, provider),
+    program: new anchor.Program({ ...idl, address: deployment.programId } as anchor.Idl, provider),
     user: injected.publicKey,
   };
 }
@@ -168,9 +142,9 @@ async function sendWalletTransaction(
     throw new Error(`Transaction simulation failed before wallet approval: ${reason}`);
   }
 
-  // Phantom should sign first when a transaction has multiple signers. Adding
+  // The wallet should sign first when a transaction has multiple signers. Adding
   // ephemeral signatures before wallet review can prevent safe simulation.
-  const signed = await phantom().signTransaction(transaction);
+  const signed = await activeWallet().signTransaction(transaction);
   if (extraSigners.length > 0) signed.partialSign(...extraSigners);
   const signature = await connection.sendRawTransaction(signed.serialize(), {
     preflightCommitment: "confirmed",
@@ -240,6 +214,7 @@ export async function protocolStats(deployment: Deployment, symbol: string) {
 }
 
 export async function claimTestUsdc(deployment: Deployment) {
+  if (deployment.cluster !== "devnet") throw new Error("The test faucet is available only on devnet.");
   const { connection, program, user } = client(deployment);
   const quoteMint = new PublicKey(deployment.quoteMint);
   const userQuote = getAssociatedTokenAddressSync(quoteMint, user);
@@ -456,20 +431,19 @@ export async function uploadLogoToIrys(deployment: Deployment, file: File) {
     throw new Error("Use a PNG, JPEG, or WebP logo.");
   }
   if (file.size > 2 * 1024 * 1024) throw new Error("Logo files must be 2 MB or smaller.");
-  const provider = phantom();
-  if (!provider.publicKey) throw new Error("Connect Phantom before uploading a logo.");
+  const provider = activeWallet();
   const irysProvider = {
     publicKey: provider.publicKey,
-    signMessage: async (message: Uint8Array) => (await provider.signMessage(message, "utf8")).signature,
+    signMessage: async (message: Uint8Array) => (await provider.signMessage(message)).signature,
     sendTransaction: async (transaction: Transaction, connection: Connection) => {
       const signed = await provider.signTransaction(transaction);
       return connection.sendRawTransaction(signed.serialize(), { preflightCommitment: "confirmed" });
     },
   };
-  const irys = await WebUploader(WebSolana)
+  const uploader = WebUploader(WebSolana)
     .withProvider(irysProvider)
-    .withRpc(process.env.NEXT_PUBLIC_SOLANA_RPC_URL || deployment.rpcUrl)
-    .devnet();
+    .withRpc(process.env.NEXT_PUBLIC_SOLANA_RPC_URL || deployment.rpcUrl);
+  const irys = await (deployment.cluster === "devnet" ? uploader.devnet() : uploader.mainnet());
   const receipt = await irys.uploadFile(file, {
     tags: [
       { name: "Content-Type", value: file.type },

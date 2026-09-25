@@ -1,236 +1,39 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-12T23:10:16.722Z",
-  "title": "Design System: Compute Market",
+  "generatedAt": "2026-09-24T00:00:00.000Z",
+  "title": "Design System: CX Compute Exchange",
   "extensions": {
     "colorMeta": {
-      "graphite-canvas": {
-        "role": "neutral",
-        "displayName": "Graphite Canvas",
-        "canonical": "#192226",
-        "tonalRamp": ["oklch(15% 0.018 215)", "oklch(25% 0.018 215)", "oklch(35% 0.018 215)", "oklch(45% 0.018 215)", "oklch(55% 0.018 215)", "oklch(65% 0.018 215)", "oklch(80% 0.018 215)", "oklch(95% 0.018 215)"]
-      },
-      "landing-canvas": {
-        "role": "neutral",
-        "displayName": "Landing Canvas",
-        "canonical": "#1a2428",
-        "tonalRamp": ["oklch(15% 0.018 215)", "oklch(25% 0.018 215)", "oklch(35% 0.018 215)", "oklch(45% 0.018 215)", "oklch(55% 0.018 215)", "oklch(65% 0.018 215)", "oklch(80% 0.018 215)", "oklch(95% 0.018 215)"]
-      },
-      "docs-canvas": {
-        "role": "neutral",
-        "displayName": "Documentation Canvas",
-        "canonical": "#182226",
-        "tonalRamp": ["oklch(15% 0.017 215)", "oklch(25% 0.017 215)", "oklch(35% 0.017 215)", "oklch(45% 0.017 215)", "oklch(55% 0.017 215)", "oklch(65% 0.017 215)", "oklch(80% 0.017 215)", "oklch(95% 0.017 215)"]
-      },
-      "graphite-header": {
-        "role": "neutral",
-        "displayName": "Header Graphite",
-        "canonical": "#172126",
-        "tonalRamp": ["oklch(15% 0.017 215)", "oklch(25% 0.017 215)", "oklch(35% 0.017 215)", "oklch(45% 0.017 215)", "oklch(55% 0.017 215)", "oklch(65% 0.017 215)", "oklch(80% 0.017 215)", "oklch(95% 0.017 215)"]
-      },
-      "graphite-panel": {
-        "role": "neutral",
-        "displayName": "Panel Graphite",
-        "canonical": "#1d282c",
-        "tonalRamp": ["oklch(15% 0.016 210)", "oklch(25% 0.016 210)", "oklch(35% 0.016 210)", "oklch(45% 0.016 210)", "oklch(55% 0.016 210)", "oklch(65% 0.016 210)", "oklch(80% 0.016 210)", "oklch(95% 0.016 210)"]
-      },
-      "graphite-ledger": {
-        "role": "neutral",
-        "displayName": "Ledger Graphite",
-        "canonical": "#1b252a",
-        "tonalRamp": ["oklch(15% 0.018 215)", "oklch(25% 0.018 215)", "oklch(35% 0.018 215)", "oklch(45% 0.018 215)", "oklch(55% 0.018 215)", "oklch(65% 0.018 215)", "oklch(80% 0.018 215)", "oklch(95% 0.018 215)"]
-      },
-      "graphite-sheet": {
-        "role": "neutral",
-        "displayName": "Mechanism Sheet",
-        "canonical": "#222c38",
-        "tonalRamp": ["oklch(15% 0.028 250)", "oklch(25% 0.028 250)", "oklch(35% 0.028 250)", "oklch(45% 0.028 250)", "oklch(55% 0.028 250)", "oklch(65% 0.028 250)", "oklch(80% 0.028 250)", "oklch(95% 0.028 250)"]
-      },
-      "graphite-selected": {
-        "role": "neutral",
-        "displayName": "Selected Graphite",
-        "canonical": "#202d32",
-        "tonalRamp": ["oklch(15% 0.020 210)", "oklch(25% 0.020 210)", "oklch(35% 0.020 210)", "oklch(45% 0.020 210)", "oklch(55% 0.020 210)", "oklch(65% 0.020 210)", "oklch(80% 0.020 210)", "oklch(95% 0.020 210)"]
-      },
-      "periwinkle": {
-        "role": "primary",
-        "displayName": "Registration Periwinkle",
-        "canonical": "#959cf7",
-        "tonalRamp": ["oklch(15% 0.145 275)", "oklch(25% 0.145 275)", "oklch(35% 0.145 275)", "oklch(45% 0.145 275)", "oklch(55% 0.145 275)", "oklch(65% 0.145 275)", "oklch(80% 0.145 275)", "oklch(95% 0.145 275)"]
-      },
-      "periwinkle-hover": {
-        "role": "primary",
-        "displayName": "Bright Registration Periwinkle",
-        "canonical": "#b0b5ff",
-        "tonalRamp": ["oklch(15% 0.125 275)", "oklch(25% 0.125 275)", "oklch(35% 0.125 275)", "oklch(45% 0.125 275)", "oklch(55% 0.125 275)", "oklch(65% 0.125 275)", "oklch(80% 0.125 275)", "oklch(95% 0.125 275)"]
-      },
-      "periwinkle-focus": {
-        "role": "primary",
-        "displayName": "Focus Periwinkle",
-        "canonical": "#a9afff",
-        "tonalRamp": ["oklch(15% 0.132 275)", "oklch(25% 0.132 275)", "oklch(35% 0.132 275)", "oklch(45% 0.132 275)", "oklch(55% 0.132 275)", "oklch(65% 0.132 275)", "oklch(80% 0.132 275)", "oklch(95% 0.132 275)"]
-      },
-      "ink": {
-        "role": "neutral",
-        "displayName": "Primary Ink",
-        "canonical": "#f4f4f5",
-        "tonalRamp": ["oklch(15% 0.004 270)", "oklch(25% 0.004 270)", "oklch(35% 0.004 270)", "oklch(45% 0.004 270)", "oklch(55% 0.004 270)", "oklch(65% 0.004 270)", "oklch(80% 0.004 270)", "oklch(95% 0.004 270)"]
-      },
-      "ink-secondary": {
-        "role": "neutral",
-        "displayName": "Secondary Ink",
-        "canonical": "#d2d8e3",
-        "tonalRamp": ["oklch(15% 0.020 255)", "oklch(25% 0.020 255)", "oklch(35% 0.020 255)", "oklch(45% 0.020 255)", "oklch(55% 0.020 255)", "oklch(65% 0.020 255)", "oklch(80% 0.020 255)", "oklch(95% 0.020 255)"]
-      },
-      "ink-muted": {
-        "role": "neutral",
-        "displayName": "Muted Instrument Ink",
-        "canonical": "#aeb8c9",
-        "tonalRamp": ["oklch(15% 0.025 255)", "oklch(25% 0.025 255)", "oklch(35% 0.025 255)", "oklch(45% 0.025 255)", "oklch(55% 0.025 255)", "oklch(65% 0.025 255)", "oklch(80% 0.025 255)", "oklch(95% 0.025 255)"]
-      },
-      "calibrated-rule": {
-        "role": "neutral",
-        "displayName": "Calibrated Rule",
-        "canonical": "#506068",
-        "tonalRamp": ["oklch(15% 0.025 215)", "oklch(25% 0.025 215)", "oklch(35% 0.025 215)", "oklch(45% 0.025 215)", "oklch(55% 0.025 215)", "oklch(65% 0.025 215)", "oklch(80% 0.025 215)", "oklch(95% 0.025 215)"]
-      },
-      "action-ink": {
-        "role": "neutral",
-        "displayName": "Action Ink",
-        "canonical": "#11151d",
-        "tonalRamp": ["oklch(15% 0.018 260)", "oklch(25% 0.018 260)", "oklch(35% 0.018 260)", "oklch(45% 0.018 260)", "oklch(55% 0.018 260)", "oklch(65% 0.018 260)", "oklch(80% 0.018 260)", "oklch(95% 0.018 260)"]
-      },
-      "docs-callout": {
-        "role": "neutral",
-        "displayName": "Documentation Callout",
-        "canonical": "#202c31",
-        "tonalRamp": ["oklch(15% 0.019 210)", "oklch(25% 0.019 210)", "oklch(35% 0.019 210)", "oklch(45% 0.019 210)", "oklch(55% 0.019 210)", "oklch(65% 0.019 210)", "oklch(80% 0.019 210)", "oklch(95% 0.019 210)"]
-      }
+      "canvas": { "role": "neutral", "displayName": "Black canvas", "canonical": "#131313" },
+      "panel": { "role": "neutral", "displayName": "Charcoal panel", "canonical": "#232323" },
+      "rule": { "role": "neutral", "displayName": "Quiet rule", "canonical": "#4d4d4d" },
+      "signal": { "role": "primary", "displayName": "White signal", "canonical": "#f2f2f2" },
+      "text": { "role": "neutral", "displayName": "Soft white", "canonical": "#f2f2f2" },
+      "muted": { "role": "neutral", "displayName": "Muted text", "canonical": "#b2b2b2" },
+      "paper": { "role": "neutral", "displayName": "Soft gray paper", "canonical": "#e8e8e8" }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Short landing and documentation statements only." },
-      "headline": { "displayName": "Headline", "purpose": "Documentation section headings." },
-      "title": { "displayName": "Title", "purpose": "Mechanism steps and concise content titles." },
-      "body": { "displayName": "Body", "purpose": "Technical explanation and supporting product copy." },
-      "label": { "displayName": "Calibrated Label", "purpose": "Metadata, columns, section labels, and system status." },
-      "data": { "displayName": "Reference Data", "purpose": "Tabular GPU-hour values." },
-      "action": { "displayName": "Action", "purpose": "Primary controls." },
-      "link": { "displayName": "Text Action", "purpose": "Quiet secondary routes and adjacent reading actions." },
-      "navigation": { "displayName": "Navigation", "purpose": "Wide-screen masthead and documentation route labels." }
+      "display": { "displayName": "Onest display", "purpose": "Large market and product headlines" },
+      "body": { "displayName": "Onest body", "purpose": "Product explanation and controls" },
+      "data": { "displayName": "Azeret Mono data", "purpose": "Price, state, and small labels" }
     },
     "shadows": [],
-    "motion": [
-      { "name": "row-registration", "value": "420ms cubic-bezier(.19, 1, .22, 1)", "purpose": "Tonal row state and periwinkle registration marker." },
-      { "name": "specification-reveal", "value": "260ms ease", "purpose": "Opacity and 3px vertical settle for hardware details." },
-      { "name": "document-scroll", "value": "smooth", "purpose": "Global anchor navigation between registered sections." }
-    ],
-    "breakpoints": [
-      { "name": "landing-compact", "value": "1180px" },
-      { "name": "landing-stacked", "value": "860px" },
-      { "name": "docs-stacked", "value": "820px" },
-      { "name": "narrow", "value": "560px" }
-    ]
+    "motion": [],
+    "breakpoints": [{ "name": "mobile", "value": "700px" }, { "name": "tablet", "value": "1050px" }]
   },
   "components": [
-    {
-      "name": "Primary Index Action",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Square, high-contrast action for moving directly to the live index ledger.",
-      "html": "<a class=\"ds-primary-action\" href=\"#\">Explore indexes <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h13M13 7l5 5-5 5\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"square\" stroke-width=\"1.6\"/></svg></a>",
-      "css": ".ds-primary-action { display:inline-flex; min-height:54px; align-items:center; justify-content:center; gap:18px; padding:0 26px; background:var(--primary, #959cf7); color:#11151d; font-family:var(--type-sans), Onest, sans-serif; font-size:15px; font-weight:650; text-decoration:none; border:0; border-radius:0; transition:background-color 180ms ease; } .ds-primary-action svg { width:22px; height:22px; } .ds-primary-action:hover { background:#b0b5ff; } .ds-primary-action:focus-visible { outline:2px solid var(--ring, #a9afff); outline-offset:4px; } .ds-primary-action:active { background:#a9afff; }"
-    },
-    {
-      "name": "Compact Methodology Action",
-      "kind": "button",
-      "refersTo": "button-compact",
-      "description": "The 44px masthead variant, reduced to an icon-only square on narrow screens.",
-      "html": "<a class=\"ds-compact-action\" href=\"#\"><span>Methodology</span><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h13M13 7l5 5-5 5\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"square\" stroke-width=\"1.6\"/></svg></a>",
-      "css": ".ds-compact-action { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:18px; padding:0 22px; background:var(--primary, #959cf7); color:#11151d; font-family:var(--type-sans), Onest, sans-serif; font-size:15px; font-weight:650; text-decoration:none; border-radius:0; transition:background-color 180ms ease; } .ds-compact-action svg { width:22px; height:22px; } .ds-compact-action:hover { background:#b0b5ff; } .ds-compact-action:focus-visible { outline:2px solid var(--ring, #a9afff); outline-offset:4px; } .ds-compact-action:active { background:#a9afff; } @media (max-width:560px) { .ds-compact-action { width:44px; padding:0; } .ds-compact-action span { display:none; } }"
-    },
-    {
-      "name": "Text Action",
-      "kind": "button",
-      "refersTo": "text-action",
-      "description": "Quiet secondary route for documentation and adjacent reading actions.",
-      "html": "<a class=\"ds-text-action\" href=\"#\">Read the docs</a>",
-      "css": ".ds-text-action { color:var(--secondary-foreground, #d2d8e3); font-family:var(--type-sans), Onest, sans-serif; font-size:15px; font-weight:400; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:6px; } .ds-text-action:hover { color:#fff; } .ds-text-action:focus-visible { outline:2px solid var(--ring, #a9afff); outline-offset:4px; } .ds-text-action:active { color:#b0b5ff; }"
-    },
-    {
-      "name": "Masthead Navigation",
-      "kind": "nav",
-      "refersTo": "navigation-link",
-      "description": "Wide-screen center navigation that disappears before the two-column ledger becomes cramped.",
-      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><a href=\"#\">Indexes</a><a href=\"#\">Mechanism</a><a href=\"#\">Docs</a></nav>",
-      "css": ".ds-nav { display:flex; align-items:center; gap:44px; font-family:var(--type-sans), Onest, sans-serif; font-size:14px; } .ds-nav a { color:var(--secondary-foreground, #d2d8e3); text-decoration:none; } .ds-nav a:hover { color:#fff; } .ds-nav a:focus-visible { outline:2px solid var(--ring, #a9afff); outline-offset:4px; } .ds-nav a:active { color:#b0b5ff; } @media (max-width:1180px) { .ds-nav { display:none; } }"
-    },
-    {
-      "name": "Selected Index Ledger Row",
-      "kind": "custom",
-      "refersTo": "ledger-row-selected",
-      "description": "Fixed-height instrument row with a registration marker, compact GPU stamp, tabular value, and composite method.",
-      "html": "<button class=\"ds-index-row\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-register\"></span><span class=\"ds-identity\"><svg aria-hidden=\"true\" viewBox=\"0 0 64 40\"><path d=\"M7 11 42 4l15 9-35 8zM7 11v17l15 8V21m35-8v17l-35 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg><span><strong>NVIDIA H100</strong><small>Hopper · 80 GB HBM3</small></span></span><span class=\"ds-price\">$2.8113</span><span class=\"ds-source\">Composite →</span></button>",
-      "css": ".ds-index-row { position:relative; display:grid; grid-template-columns:minmax(260px,1.25fr) minmax(220px,1fr) 180px; align-items:center; gap:20px; width:100%; min-height:102px; padding:0; border:0; border-top:1px solid #46565e; border-bottom:1px solid var(--border, #506068); border-radius:0; background:#202d32; color:var(--foreground, #f4f4f5); text-align:left; transition:background-color 420ms cubic-bezier(.19,1,.22,1); } .ds-index-row:hover, .ds-index-row:focus-visible { background:#202d32; } .ds-index-row:focus-visible { outline:2px solid var(--ring, #a9afff); outline-offset:4px; } .ds-index-row:active { background:#252f34; } .ds-register { position:absolute; top:20px; bottom:20px; left:0; width:3px; background:var(--primary, #959cf7); } .ds-identity { display:grid; grid-template-columns:112px 1fr; align-items:center; min-width:0; height:100%; border-right:1px solid var(--border, #506068); } .ds-identity svg { width:72px; height:54px; margin-left:20px; color:#aeb8c9; } .ds-identity strong, .ds-identity small { display:block; font-family:var(--type-sans), Onest, sans-serif; } .ds-identity strong { font-size:16px; font-weight:600; } .ds-identity small { margin-top:5px; color:var(--muted-foreground, #aeb8c9); font-size:12px; } .ds-price { align-self:stretch; display:flex; align-items:center; border-right:1px solid var(--border, #506068); font-family:var(--type-data), 'Azeret Mono', monospace; font-size:30px; font-weight:600; letter-spacing:-.03em; font-variant-numeric:tabular-nums; } .ds-source { color:#d5dbe6; font-family:var(--type-sans), Onest, sans-serif; font-size:15px; } @media (prefers-reduced-motion:reduce) { .ds-index-row { transition:none; } }"
-    },
-    {
-      "name": "Mechanism Step",
-      "kind": "custom",
-      "refersTo": "mechanism-step",
-      "description": "Circular sequence marker and line icon inside the flat protocol flow.",
-      "html": "<div class=\"ds-mechanism-step\"><span class=\"ds-step-number\">01</span><span class=\"ds-step-icon\"><svg aria-hidden=\"true\" viewBox=\"0 0 34 34\"><path d=\"m17 3 12 7v14l-12 7-12-7V10l12-7Zm0 0v14m12-7-12 7m-12-7 12 7m0 14V17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></span><strong>Composite reference</strong></div>",
-      "css": ".ds-mechanism-step { display:flex; align-items:center; gap:18px; padding:18px 0; background:#222c38; color:var(--foreground, #f4f4f5); font-family:var(--type-sans), Onest, sans-serif; } .ds-step-number, .ds-step-icon { display:grid; place-items:center; flex:0 0 auto; border-radius:50%; color:var(--primary, #959cf7); } .ds-step-number { width:44px; height:44px; border:2px solid var(--primary, #959cf7); font-family:var(--type-data), 'Azeret Mono', monospace; font-size:13px; font-weight:650; } .ds-step-icon { width:76px; height:76px; border:1px solid var(--border, #506068); } .ds-step-icon svg { width:34px; height:34px; } .ds-mechanism-step strong { font-size:18px; font-weight:550; } .ds-mechanism-step:hover .ds-step-icon { border-color:#a9afff; } .ds-mechanism-step:focus-within { outline:2px solid var(--ring, #a9afff); outline-offset:4px; }"
-    },
-    {
-      "name": "Documentation Callout",
-      "kind": "card",
-      "refersTo": "docs-callout",
-      "description": "Square bordered inset for compact, verified protocol facts.",
-      "html": "<div class=\"ds-docs-callout\"><strong>Displayed indexes</strong><span>H100 · H200 · B200 · A100 · RTX 5090</span></div>",
-      "css": ".ds-docs-callout { display:grid; gap:8px; padding:22px 24px; border:1px solid #53616a; border-radius:0; background:#202c31; color:#c7cfdb; font-family:var(--type-sans), Onest, sans-serif; } .ds-docs-callout strong { color:var(--foreground, #f4f4f5); font-size:13px; letter-spacing:.04em; text-transform:uppercase; } .ds-docs-callout span { line-height:1.5; } .ds-docs-callout:hover { border-color:#a9afff; } .ds-docs-callout:focus-within { outline:2px solid var(--ring, #a9afff); outline-offset:4px; }"
-    },
-    {
-      "name": "Deployment Status",
-      "kind": "chip",
-      "refersTo": "status-badge",
-      "description": "Neutral, explicit state label for unconfigured public deployment.",
-      "html": "<span class=\"ds-status\"><i aria-hidden=\"true\"></i>No public Solana deployment configured</span>",
-      "css": ".ds-status { display:inline-flex; align-items:center; gap:11px; padding:10px 13px; border:1px solid #53616a; border-radius:0; color:#d9dee7; font-family:var(--type-data), 'Azeret Mono', monospace; font-size:12px; text-transform:uppercase; } .ds-status i { width:8px; height:8px; background:#9fa9bc; } .ds-status:hover { border-color:#a9afff; } .ds-status:focus-visible { outline:2px solid var(--ring, #a9afff); outline-offset:4px; }"
-    }
+    { "name": "Primary action", "kind": "button", "refersTo": "button-primary", "description": "Wallet, mint, and launch actions.", "html": "<button class=\"ds-action\">Connect wallet ↗</button>", "css": ".ds-action{min-height:53px;padding:0 18px;border:0;border-radius:0;background:#f2f2f2;color:#131313;font:800 12px Onest,sans-serif}.ds-action:hover{background:#dedede}.ds-action:focus-visible{outline:2px solid #f2f2f2;outline-offset:3px}" },
+    { "name": "Market input", "kind": "input", "description": "Launch form field.", "html": "<input class=\"ds-input\" placeholder=\"Market name\" />", "css": ".ds-input{height:53px;padding:0 15px;border:1px solid #4d4d4d;border-radius:0;background:#131313;color:#f2f2f2;font:400 14px Onest,sans-serif}.ds-input:focus-visible{outline:2px solid #f2f2f2;outline-offset:2px}" },
+    { "name": "Charcoal panel", "kind": "card", "description": "Flat bounded product surface.", "html": "<div class=\"ds-panel\">B200 / USD</div>", "css": ".ds-panel{padding:24px;border:1px solid #4d4d4d;border-radius:0;background:#232323;color:#f2f2f2;font:600 14px Onest,sans-serif}" },
+    { "name": "Network state", "kind": "chip", "description": "Devnet state label.", "html": "<span class=\"ds-state\">● DEVNET</span>", "css": ".ds-state{color:#f2f2f2;font:700 10px 'Azeret Mono',monospace;letter-spacing:.1em}" },
+    { "name": "Navigation", "kind": "nav", "description": "Simple product route links.", "html": "<nav class=\"ds-nav\"><a href=\"#\">Market</a><a href=\"#\">Launchpad</a></nav>", "css": ".ds-nav{display:flex;gap:24px}.ds-nav a{color:#b2b2b2;text-decoration:none;font:600 13px Onest,sans-serif}.ds-nav a:hover,.ds-nav a:focus-visible{color:#f2f2f2}" }
   ],
   "narrative": {
-    "northStar": "The Calibrated GPU Ledger",
-    "overview": "Compute Market feels like a benchmark instrument made public: deep graphite sheets, cool hairline registration, compact hardware plates, and one scarce periwinkle signal. It is authoritative without borrowing the visual noise of a crypto trading terminal, and technical without becoming a generic developer dashboard.\n\nThe landing surface operates at a glance while the documentation surface slows into a measured read. Both surfaces share the same strict grid, square controls, disciplined type pairing, and truth-first product posture. The interface may look active only when its data is verifiably active; visual density never licenses fabricated market activity.",
-    "keyCharacteristics": [
-      "Graphite-on-graphite tonal layering with calibrated one-pixel rules.",
-      "Dusty periwinkle used as a registration signal, not a decorative wash.",
-      "Onest for confident product hierarchy; Azeret Mono for measurements and system labels.",
-      "Square actions and containers contrasted with circular process markers.",
-      "Compact generated GPU plates registered to a stable quote grid.",
-      "Real source data or an explicit unavailable/deployment state—never simulated activity."
-    ],
-    "rules": [
-      { "name": "The Calibrated Contrast Rule", "body": "Periwinkle marks action, focus, selection, or protocol sequence; never spread it into gradients, decorative glows, or large background fields.", "section": "colors" },
-      { "name": "The Measurement Face Rule", "body": "Use Azeret Mono only where alignment, sequence, status, or numeric comparison matters; never use it for paragraphs or large expressive headlines.", "section": "typography" },
-      { "name": "The Fixed Registration Rule", "body": "Selecting an index must not move or resize the quote grid; reveal the periwinkle registration bar and specification lines inside the row’s existing height.", "section": "layout" },
-      { "name": "The Flat Instrument Rule", "body": "Surfaces remain flat at rest; hierarchy is expressed through tone, rule weight, and registration—not drop shadows, glow, or floating cards.", "section": "elevation" },
-      { "name": "The Square Action Rule", "body": "Keep clickable actions and information plates unrounded; reserve the 50% circle treatment for mechanism markers and icons only.", "section": "shapes" },
-      { "name": "The Evidence Before Interface Rule", "body": "Never make a screen look more alive by inventing prices, movement, balances, volume, liquidity, deployment, transactions, or launch activity.", "section": "components" }
-    ],
-    "dos": [
-      "Do let the latest verified GPU-hour prices and their source dominate the operating surface.",
-      "Do keep selected-row feedback inside the fixed ledger geometry and preserve tabular numeric alignment.",
-      "Do use compact generated GPU plates as instrument identifiers with clear model, architecture, and memory labels.",
-      "Do collapse structure deliberately at 1,180px, 860/820px, and 560px instead of merely shrinking the desktop composition.",
-      "Do remove ledger transitions and the selected specification reveal transition under `prefers-reduced-motion: reduce`.",
-      "Do replace unavailable or unverified activity with a truthful state, an omitted control, or a direct source link."
-    ],
-    "donts": [
-      "Don't fabricate prices, percentage changes, balances, tokens, launches, liquidity, deployment status, or transaction activity.",
-      "Don't use dark-neon crypto gradients, luminous glows, rounded dashboard cards, or oversized photoreal hardware art.",
-      "Don't turn periwinkle into a broad decorative fill; keep it scarce and functional.",
-      "Don't use Azeret Mono for long-form prose or Onest for tabular prices and calibrated labels.",
-      "Don't let interaction change quote-row height, column registration, or the position of neighboring instruments.",
-      "Don't present prototype economics as live market performance."
-    ]
+    "northStar": "The Compute Exchange",
+    "overview": "The B200 chart is the first product object. CX uses the user-selected AI-generated Hour Dial emblem on a black and gray market canvas, the existing B200 pixel illustration, and clear controls. Details live in docs while launch fields update a live preview.",
+    "keyCharacteristics": ["Chart first", "Original B200 pixel art", "Hour Dial emblem", "Real devnet states", "Meteora DBC attribution"],
+    "rules": [{ "name": "Show real market state", "body": "Use live reference and onchain data for product values; label illustrative previews and planned economics.", "section": "components" }],
+    "dos": ["Keep the chart dominant on home.", "Keep the other GPUs off home and disabled until available."],
+    "donts": ["Do not replace the original B200 illustration.", "Do not imply planned fee routing is live."]
   }
 }
