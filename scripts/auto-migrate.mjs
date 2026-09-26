@@ -60,6 +60,9 @@ async function main() {
     throw new Error("The RPC genesis hash does not match MIGRATOR_EXPECTED_GENESIS_HASH.");
   }
   const signer = settings.enabled ? loadMigratorKeypair(process.env.MIGRATOR_KEYPAIR_JSON) : null;
+  if (signer && cluster === "mainnet-beta" && signer.publicKey.toBase58() !== deployment.feeRecipient) {
+    throw new Error("Mainnet migration signer does not match the fee recipient in the manifest.");
+  }
   const balance = signer ? await connection.getBalance(signer.publicKey, "confirmed") : null;
   const dbc = new DynamicBondingCurveClient(connection, "confirmed");
   const program = dbc.state.getProgram();

@@ -10,10 +10,13 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-gpu_market = "BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG"
+gpu_market = "7M2BCLQXQpoGu4V8tcfZ4Hheu95kJfwYHyTVhUGhPPA5"
 
 [programs.devnet]
 gpu_market = "BhgV3HcxzK9aUnhcfyez96ctBhESzvZXuE6A3x8LhuLG"
+
+[programs.mainnet]
+gpu_market = "7M2BCLQXQpoGu4V8tcfZ4Hheu95kJfwYHyTVhUGhPPA5"
 
 [registry]
 url = "https://api.apr.dev"
@@ -21,3 +24,7 @@ url = "https://api.apr.dev"
 [provider]
 cluster = "Localnet"
 wallet = ".keys/testnet-deployer.json"
+
+[test]
+upgradeable = true
+startup_wait = 10000

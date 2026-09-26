@@ -15,7 +15,7 @@ export function B200Trade() {
   const { address, connect, error: walletError } = useWallet();
   const { network } = useNetwork();
   const isDevnet = network === "devnet";
-  const quoteLabel = isDevnet ? "test USDC" : "quote token";
+  const quoteLabel = isDevnet ? "test USDC" : "USDC";
   const [deployment, setDeployment] = useState<Deployment | null>(null);
   const [ready, setReady] = useState(false);
   const [stats, setStats] = useState<ProtocolStats | null>(null);
@@ -36,7 +36,8 @@ export function B200Trade() {
   const inputAsset = mode === "buy" ? quoteLabel : "cmB200";
   const available = address && balancesReady ? (mode === "buy" ? walletBalances.quote : walletBalances.token) : null;
   const amountProblem = address ? tokenAmountIssue(amount, available, inputAsset) : null;
-  const reserveProblem = mode === "sell" && stats && estimatedReceive !== null && estimatedReceive > stats.reserve + 0.000001
+  const reserveProblem = mode === "sell" && stats && Number.isFinite(enteredAmount)
+    && enteredAmount * stats.onchainPrice > stats.reserve + 0.000001
     ? `The reserve has ${stats.reserve.toFixed(2)} ${quoteLabel}. Redeem a smaller amount.`
     : null;
   const tradeProblem = address
@@ -97,8 +98,8 @@ export function B200Trade() {
         const currentProblem = tokenAmountIssue(amount, currentInput, inputAsset) || slippageIssue(slippage)
           || (currentBalances.sol < 0.00001 ? "Add a little SOL for network fees." : null);
         if (currentProblem) throw new Error(currentProblem);
-        const currentEstimate = mode === "sell" ? Number(amount) * currentStats.onchainPrice * 0.997 : 0;
-        if (mode === "sell" && currentEstimate > currentStats.reserve + 0.000001) {
+        const currentGross = mode === "sell" ? Number(amount) * currentStats.onchainPrice : 0;
+        if (mode === "sell" && currentGross > currentStats.reserve + 0.000001) {
           throw new Error(`The reserve has ${currentStats.reserve.toFixed(2)} ${quoteLabel}. Redeem a smaller amount.`);
         }
         setSignature(await tradeIndex(deployment, "B200", mode, Number(amount), currentStats.onchainPrice, Math.round(Number(slippage) * 100)));

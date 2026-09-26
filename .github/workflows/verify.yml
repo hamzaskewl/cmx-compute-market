@@ -21,3 +21,40 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: node --test tests/auto-migrate.test.mjs
+
+  program:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install pinned Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v4.2.2/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Install Anchor 0.32.1
+        run: |
+          curl -sSfL https://github.com/coral-xyz/anchor/releases/download/v0.32.1/anchor-0.32.1-x86_64-unknown-linux-gnu -o anchor-cli
+          sudo install -m 0755 anchor-cli /usr/local/bin/anchor
+          anchor --version
+      - name: Compile mainnet program and IDL
+        run: anchor build
+      - name: Verify generated artifact
+        run: npm run sync:mainnet-idl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mainnet-program-build
+          path: |
+            target/deploy/gpu_market.so
+            target/idl/gpu_market.json
+      - name: Prepare isolated validator keys
+        run: |
+          mkdir -p .keys
+          node --input-type=module -e 'import { Keypair } from "@solana/web3.js"; import { writeFileSync } from "node:fs"; for (const file of [".keys/testnet-deployer.json", "target/deploy/gpu_market-keypair.json"]) writeFileSync(file, JSON.stringify([...Keypair.generate().secretKey]));'
+          anchor keys sync
+      - name: Exercise collateral and fee paths on local validator
+        run: anchor test

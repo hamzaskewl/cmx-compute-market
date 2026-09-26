@@ -50,6 +50,10 @@ export async function connectSolanaWallet(kind: WalletKind, silent = false): Pro
     return publicKey;
   }
 
+  const deploymentResponse = await fetch("/api/deployment", { cache: "no-store" });
+  if (!deploymentResponse.ok) throw new Error("The selected Solana network is not live yet.");
+  const { cluster } = await deploymentResponse.json() as { cluster: "devnet" | "mainnet-beta" };
+  const mainnet = cluster === "mainnet-beta";
   const { createSolanaClient } = await import("@metamask/connect-solana");
   const client = await createSolanaClient({
     dapp: {
@@ -57,7 +61,9 @@ export async function connectSolanaWallet(kind: WalletKind, silent = false): Pro
       url: window.location.origin,
       iconUrl: `${window.location.origin}/brand/cx-emblem.png`,
     },
-    api: { supportedNetworks: { devnet: `${window.location.origin}/api/rpc` } },
+    api: { supportedNetworks: mainnet
+      ? { mainnet: `${window.location.origin}/api/rpc` }
+      : { devnet: `${window.location.origin}/api/rpc` } },
   });
   const wallet = client.getWallet();
   const features = wallet.features as unknown as {
@@ -70,7 +76,9 @@ export async function connectSolanaWallet(kind: WalletKind, silent = false): Pro
     : (await features["standard:connect"].connect()).accounts[0];
   if (!account) throw new Error("MetaMask did not return a Solana account.");
   const publicKey = new PublicKey(account.address);
-  const chain = "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1";
+  const chain = mainnet
+    ? "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+    : "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1";
 
   async function signTransaction<T extends SolanaTransaction>(transaction: T): Promise<T> {
     const bytes = transaction instanceof Transaction

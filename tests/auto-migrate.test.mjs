@@ -4,6 +4,7 @@ import BN from "bn.js";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import {
   DBC_PROGRAM_ID,
+  MAINNET_GENESIS_HASH,
   isMigrationReady,
   loadMigratorKeypair,
   readMigratorSettings,
@@ -38,15 +39,21 @@ test("signing is opt-in and bound to the configured RPC genesis", () => {
 });
 
 test("mainnet signing requires a separate explicit flag and manifest", () => {
-  const mainnetManifest = { ...manifest, cluster: "mainnet-beta" };
+  const mainnetManifest = { ...manifest, cluster: "mainnet-beta", feeRecipient: Keypair.generate().publicKey.toBase58() };
   const env = {
     SOLANA_CLUSTER: "mainnet-beta",
     MIGRATOR_ENABLED: "true",
-    MIGRATOR_EXPECTED_GENESIS_HASH: "expected",
+    MIGRATOR_EXPECTED_GENESIS_HASH: MAINNET_GENESIS_HASH,
     MIGRATOR_KEYPAIR_JSON: "[]",
+    SOLANA_MAINNET_RPC_URL: "https://private-mainnet.example",
+    SOLANA_MAINNET_WSS_URL: "wss://private-mainnet.example",
   };
   assert.throws(() => readMigratorSettings(env, mainnetManifest), /MIGRATOR_ENABLE_MAINNET/);
-  assert.equal(readMigratorSettings({ ...env, MIGRATOR_ENABLE_MAINNET: "true" }, mainnetManifest).enabled, true);
+  const settings = readMigratorSettings({ ...env, MIGRATOR_ENABLE_MAINNET: "true" }, mainnetManifest);
+  assert.equal(settings.enabled, true);
+  assert.equal(settings.rpcUrl, "https://private-mainnet.example");
+  assert.equal(settings.wsUrl, "wss://private-mainnet.example");
+  assert.throws(() => readMigratorSettings({ ...env, MIGRATOR_ENABLE_MAINNET: "true", MIGRATOR_EXPECTED_GENESIS_HASH: "devnet" }, mainnetManifest), /Solana mainnet/);
 });
 
 test("only an unmigrated pool at the exact configured threshold is eligible", () => {
